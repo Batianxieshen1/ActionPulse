@@ -273,6 +273,12 @@ Because `http://192.168.x.x` is not a secure context, so browsers refuse to regi
 No. It is a PWA, installable from the browser. On a secure context it also runs offline.
 </details>
 
+## Development log
+
+The engineering notes behind this project — pre-implementation spec audits, the plan for the light theme, and the list of things that looked fine and turned out not to be — live in **[docs/dev-log](docs/dev-log/README.md)**.
+
+They include a service worker that silently failed to register while 183 tests stayed green, and a WCAG failure in the original dark theme that only surfaced once contrast was actually asserted.
+
 ---
 
 ## License
