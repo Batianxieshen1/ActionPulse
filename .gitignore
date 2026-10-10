@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+coverage/
+*.local
+.DS_Store
+
+# 同步数据与密钥：token.txt 和 llm.json 绝不能进版本库
+data/
+.env

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0b0f17" />
+    <meta name="description" content="ActionPulse 脉冲行动 —— 替你做决策的智能清单：自动紧迫度排序、只做一件事、微步拆解、打勾即时正反馈。" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ActionPulse" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <!-- iOS 主屏图标要 180x180 的满幅不透明 PNG，圆角由系统自己加 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <title>ActionPulse 脉冲行动</title>
+    <script>
+      // 在首次绘制之前把主题定好。
+      // 如果等 React 挂载后再设，浅色用户会先看到一帧深色界面（FOUC）。
+      // 读的就是持久化那份状态（app 信封里的 settings.theme），与 useTheme 保持同一套规则。
+      (function () {
+        var COLORS = { dark: "#0b0f17", light: "#f7f7f4" };
+        var pref = "system";
+        try {
+          var raw = localStorage.getItem("actionpulse.v1");
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            var t = parsed && parsed.settings && parsed.settings.theme;
+            if (t === "light" || t === "dark" || t === "system") pref = t;
+          }
+        } catch (error) {
+          /* 读不到就用默认值，绝不因为主题把应用卡住 */
+        }
+        var resolved = pref;
+        if (pref === "system") {
+          resolved =
+            window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", resolved);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", COLORS[resolved]);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

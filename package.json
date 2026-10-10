@@ -1,0 +1,60 @@
+{
+  "name": "actionpulse",
+  "private": false,
+  "version": "2.1.0",
+  "type": "module",
+  "description": "Local-first task cockpit: explainable urgency scoring, one-thing focus mode, LAN sync with zero-dependency backend.",
+  "license": "MIT",
+  "author": "Batianxieshen1",
+  "homepage": "https://github.com/Batianxieshen1/ActionPulse#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Batianxieshen1/ActionPulse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Batianxieshen1/ActionPulse/issues"
+  },
+  "keywords": [
+    "productivity",
+    "todo",
+    "task-manager",
+    "local-first",
+    "pomodoro",
+    "focus",
+    "crdt",
+    "offline-first",
+    "react",
+    "typescript",
+    "pwa"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite",
+    "api": "node server/index.mjs",
+    "build": "tsc --noEmit && node scripts/check-public.mjs && vite build",
+    "start": "npm run build && node server/index.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "gen:icons": "node scripts/generate-icons.mjs"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "lucide-react": "^1.52.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,1005 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   ActionPulse 设计令牌 —— "Pulse Console"
+   近黑仪表盘底色 + 单一电光柠檬主色 + 四档紧迫度色阶
+   ========================================================================= */
+:root {
+  /* ---------- 与主题无关：结构（圆角 / 字体 / 安全区） ---------- */
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  --font-ui: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+    "Liberation Mono", monospace;
+
+  /* iOS 安全区。配合 viewport-fit=cover 与状态栏 black-translucent，内容是铺到屏幕边缘的，
+     所以必须自己把「刘海 / 灵动岛 / 底部小横条」让出来；桌面浏览器上这些值都是 0，
+     同一套样式两端通用。 */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* =========================================================================
+   主题色 —— 深色「Pulse Console」（默认）
+   默认就是深色，所以 :root 直接给深色值；浅色只覆盖颜色，不动结构。
+   ========================================================================= */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --ink-950: #06070a;
+  --ink-900: #0a0c11;
+  --ink-800: #10131a;
+  --ink-750: #151922;
+  --ink-700: #1c212c;
+
+  --line: rgba(255, 255, 255, 0.075);
+  --line-strong: rgba(255, 255, 255, 0.15);
+
+  --text: #e9edf4;
+  --text-dim: #97a1b2;
+  --text-faint: #7e8692;
+
+  --pulse: #c8f751;
+  --pulse-soft: rgba(200, 247, 81, 0.14);
+  --pulse-line: rgba(200, 247, 81, 0.45);
+  --on-accent: #0a0c11;
+  --accent-hover: #d7ff6b;
+  --accent-gradient-end: #eaff9a;
+  --accent-border: rgba(200, 247, 81, 0.32);
+  --accent-border-soft: rgba(200, 247, 81, 0.4);
+  --accent-border-ring: rgba(200, 247, 81, 0.35);
+  --accent-focus: rgba(200, 247, 81, 0.45);
+  --accent-inset: rgba(200, 247, 81, 0.08);
+  --accent-shadow-far: rgba(200, 247, 81, 0.5);
+  --accent-ring: rgba(200, 247, 81, 0.25);
+  --accent-glow: rgba(200, 247, 81, 0.6);
+  --pulse-beat-glow: rgba(200, 247, 81, 0.75);
+
+  --tier-critical: #ff5252;
+  --tier-high: #ff9f45;
+  --tier-medium: #4cc9f0;
+  --tier-low: #78869a;
+  --teal: #5eead4;
+  --alert-glow: rgba(255, 82, 82, 0.55);
+
+  --shell-glow-1: rgba(200, 247, 81, 0.09);
+  --shell-glow-2: rgba(76, 201, 240, 0.085);
+  --shell-glow-3: rgba(255, 82, 82, 0.05);
+  --grain-opacity: 0.035;
+
+  --panel-bg-top: rgba(16, 19, 26, 0.92);
+  --panel-bg-bottom: rgba(8, 10, 14, 0.96);
+  --sheet-bg-top: rgba(16, 19, 26, 0.98);
+  --sheet-bg-bottom: rgba(8, 10, 14, 0.99);
+  --edge-bg: rgba(16, 19, 26, 0.86);
+  --edge-bg-hover: rgba(24, 28, 36, 0.95);
+  --overlay-base: rgba(4, 5, 8, 0.97);
+  --overlay-glow: rgba(200, 247, 81, 0.12);
+  --toast-bg: rgba(18, 22, 30, 0.95);
+
+  --card-top: rgba(255, 255, 255, 0.035);
+  --card-bottom: rgba(255, 255, 255, 0.012);
+  --card-hover-top: rgba(255, 255, 255, 0.05);
+  --card-hover-bottom: rgba(255, 255, 255, 0.018);
+  --quad-cell: rgba(255, 255, 255, 0.014);
+  --row-hover: rgba(255, 255, 255, 0.04);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --btn-bg: rgba(255, 255, 255, 0.035);
+  --btn-bg-hover: rgba(255, 255, 255, 0.075);
+  --ghost-hover: rgba(255, 255, 255, 0.06);
+  --hover-surface: rgba(255, 255, 255, 0.07);
+  --track: rgba(255, 255, 255, 0.07);
+  --halo: rgba(255, 255, 255, 0.045);
+  --shimmer: rgba(255, 255, 255, 0.55);
+
+  --control-bg: rgba(0, 0, 0, 0.25);
+  --field-bg: rgba(0, 0, 0, 0.3);
+  --select-bg: rgba(0, 0, 0, 0.35);
+  --field-bg-focus: rgba(0, 0, 0, 0.45);
+
+  --scrollbar-thumb-bg: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb-color: rgba(255, 255, 255, 0.16);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.26);
+
+  --shadow-panel: 0 32px 80px -24px rgba(0, 0, 0, 0.9);
+  --shadow-toast-color: rgba(0, 0, 0, 0.95);
+}
+
+/* =========================================================================
+   主题色 —— 浅色「日光工作台」
+   刻意不是把深色反过来：亮底上电光柠檬 #c8f751 的对比度只有 1.24:1，
+   所以换成深橄榄 #4a6b00（5.76:1）。所有取值由 tests/theme.test.ts 自动校验。
+   ========================================================================= */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --ink-950: #f7f7f4;
+  --ink-900: #f2f2ee;
+  --ink-800: #ffffff;
+  --ink-750: #ffffff;
+  --ink-700: #e8e8e2;
+
+  --line: rgba(26, 29, 35, 0.12);
+  --line-strong: rgba(26, 29, 35, 0.24);
+
+  --text: #1a1d23;
+  --text-dim: #4b5560;
+  --text-faint: #5f6874;
+
+  --pulse: #4a6b00;
+  --pulse-soft: color-mix(in srgb, var(--pulse) 12%, transparent);
+  --pulse-line: color-mix(in srgb, var(--pulse) 58%, transparent);
+  --on-accent: #ffffff;
+  --accent-hover: #3d5900;
+  --accent-gradient-end: #6f9410;
+  --accent-border: color-mix(in srgb, var(--pulse) 40%, transparent);
+  --accent-border-soft: color-mix(in srgb, var(--pulse) 48%, transparent);
+  --accent-border-ring: color-mix(in srgb, var(--pulse) 42%, transparent);
+  --accent-focus: color-mix(in srgb, var(--pulse) 60%, transparent);
+  --accent-inset: color-mix(in srgb, var(--pulse) 10%, transparent);
+  --accent-shadow-far: color-mix(in srgb, var(--pulse) 22%, transparent);
+  --accent-ring: color-mix(in srgb, var(--pulse) 28%, transparent);
+  --accent-glow: color-mix(in srgb, var(--pulse) 30%, transparent);
+  --pulse-beat-glow: color-mix(in srgb, var(--pulse) 35%, transparent);
+
+  --tier-critical: #c02626;
+  --tier-high: #9a5a00;
+  --tier-medium: #0b6b8a;
+  --tier-low: #5b6673;
+  --teal: #0f766e;
+  --alert-glow: color-mix(in srgb, var(--tier-critical) 28%, transparent);
+
+  --shell-glow-1: color-mix(in srgb, #8aa800 20%, transparent);
+  --shell-glow-2: color-mix(in srgb, #4cc9f0 16%, transparent);
+  --shell-glow-3: color-mix(in srgb, #ff5252 9%, transparent);
+  --grain-opacity: 0.02;
+
+  --panel-bg-top: rgba(255, 255, 255, 0.86);
+  --panel-bg-bottom: rgba(247, 247, 244, 0.94);
+  --sheet-bg-top: rgba(255, 255, 255, 0.97);
+  --sheet-bg-bottom: rgba(247, 247, 244, 0.99);
+  --edge-bg: rgba(255, 255, 255, 0.86);
+  --edge-bg-hover: rgba(255, 255, 255, 0.97);
+  --overlay-base: rgba(247, 247, 244, 0.96);
+  --overlay-glow: color-mix(in srgb, var(--pulse) 9%, transparent);
+  --toast-bg: rgba(255, 255, 255, 0.97);
+
+  --card-top: #ffffff;
+  --card-bottom: #fbfbf8;
+  --card-hover-top: #ffffff;
+  --card-hover-bottom: #ffffff;
+  --quad-cell: rgba(26, 29, 35, 0.02);
+  --row-hover: rgba(26, 29, 35, 0.05);
+  --scrim: rgba(26, 29, 35, 0.28);
+  --btn-bg: rgba(255, 255, 255, 0.92);
+  --btn-bg-hover: #ffffff;
+  --ghost-hover: rgba(26, 29, 35, 0.06);
+  --hover-surface: rgba(26, 29, 35, 0.07);
+  --track: rgba(26, 29, 35, 0.1);
+  --halo: rgba(26, 29, 35, 0.06);
+  --shimmer: rgba(255, 255, 255, 0.8);
+
+  --control-bg: rgba(26, 29, 35, 0.04);
+  --field-bg: rgba(26, 29, 35, 0.05);
+  --select-bg: rgba(26, 29, 35, 0.06);
+  --field-bg-focus: rgba(26, 29, 35, 0.09);
+
+  --scrollbar-thumb-bg: rgba(26, 29, 35, 0.2);
+  --scrollbar-thumb-color: rgba(26, 29, 35, 0.22);
+  --scrollbar-thumb-hover: rgba(26, 29, 35, 0.36);
+
+  --shadow-panel: 0 32px 80px -32px rgba(26, 29, 35, 0.18);
+  --shadow-toast-color: rgba(26, 29, 35, 0.22);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink-950);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
+::selection {
+  background: var(--pulse);
+  color: var(--on-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--pulse);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* --------------------------------------------------------------- 滚动条 */
+.ap-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+.ap-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.ap-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ap-scroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-bg);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+.ap-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+
+/* ------------------------------------------------------------- 整体布局 */
+.ap-shell {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 620px at -10% -10%, var(--shell-glow-1), transparent 62%),
+    radial-gradient(900px 700px at 108% 108%, var(--shell-glow-2), transparent 60%),
+    radial-gradient(700px 500px at 50% 120%, var(--shell-glow-3), transparent 65%),
+    var(--ink-950);
+}
+
+/* 胶片颗粒：让大面积暗色不再像纯色块 */
+.ap-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ------------------------------------------------------------------ 面板 */
+.ap-panel {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  min-width: 400px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--panel-bg-top), var(--panel-bg-bottom));
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(18px);
+  /* Tailwind preflight 已设 border-box，所以这几条内边距不会把 100% 高的面板撑出去 */
+  padding-block: var(--safe-top) var(--safe-bottom);
+  padding-inline: var(--safe-left) var(--safe-right);
+}
+
+/* 抽屉模式：脱离文档流，浮在台面之上 */
+.ap-panel[data-pinned="false"] {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 5;
+}
+/* 收起状态：无论是否 Pin，都滑出视口，把空间还给台面 */
+.ap-panel[data-open="false"] {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 5;
+  transform: translateX(-102%);
+}
+
+/* 左侧悬浮把手（PRD §2.1 抽屉悬浮模式） */
+.ap-edge {
+  position: absolute;
+  z-index: 3;
+  inset-inline-start: 0;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 168px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-inline-start: none;
+  border-start-end-radius: 14px;
+  border-end-end-radius: 14px;
+  background: var(--edge-bg);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: width 200ms ease, background 200ms ease, border-color 200ms ease;
+}
+.ap-edge:hover {
+  width: 32px;
+  background: var(--edge-bg-hover);
+  border-color: var(--line-strong);
+}
+.ap-edge__label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.34em;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.ap-edge__dot {
+  position: absolute;
+  inset-block-start: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pulse);
+  box-shadow: 0 0 12px 2px var(--pulse);
+}
+.ap-edge__count {
+  position: absolute;
+  inset-block-end: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+/* ------------------------------------------------------------ 台面 / 画布 */
+.ap-stage {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------- 脉冲示波 */
+.ap-pulse {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.ap-pulse__track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  animation: ap-scroll 2.6s linear infinite;
+  will-change: transform;
+}
+.ap-pulse__track svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ap-pulse__path {
+  fill: none;
+  stroke: var(--pulse-line);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: stroke 240ms ease;
+}
+.ap-pulse[data-beat="true"] .ap-pulse__path {
+  stroke: var(--pulse);
+  filter: drop-shadow(0 0 6px var(--pulse-beat-glow));
+}
+.ap-pulse[data-beat="true"] .ap-pulse__track {
+  animation-duration: 900ms;
+}
+@keyframes ap-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ------------------------------------------------------------------ 文字 */
+.ap-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ap-label {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ------------------------------------------------------------------ 卡片 */
+.ap-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+.ap-card:hover {
+  border-color: var(--line-strong);
+  background: linear-gradient(180deg, var(--card-hover-top), var(--card-hover-bottom));
+}
+.ap-card[data-done="true"] {
+  opacity: 0.45;
+}
+.ap-card[data-rank="0"] {
+  border-color: var(--accent-border);
+  box-shadow: inset 0 0 0 1px var(--accent-inset), 0 12px 40px -28px var(--accent-shadow-far);
+}
+
+.ap-card__grip {
+  cursor: grab;
+  color: var(--text-faint);
+}
+.ap-card[data-dragging="true"] {
+  opacity: 0.4;
+}
+[data-drop="true"] > .ap-card {
+  border-color: var(--pulse);
+  box-shadow: 0 0 0 1px var(--accent-ring);
+}
+
+/* ---------------------------------------------------------------- 勾选框 */
+.ap-check {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--control-bg);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 120ms ease;
+}
+.ap-check:hover {
+  border-color: var(--pulse);
+  transform: scale(1.06);
+}
+.ap-check[data-checked="true"] {
+  border-color: var(--pulse);
+  background: var(--pulse);
+  color: var(--on-accent);
+}
+.ap-check[data-size="sm"] {
+  width: 18px;
+  height: 18px;
+  border-width: 1.2px;
+}
+.ap-check__tick {
+  animation: ap-pop 320ms cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+@keyframes ap-pop {
+  0% {
+    transform: scale(0.2) rotate(-18deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.22) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+[data-striking="true"] .ap-card__title {
+  animation: ap-strike 520ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes ap-strike {
+  to {
+    color: var(--text-faint);
+    text-decoration: line-through;
+    text-decoration-color: var(--pulse);
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------- 紧迫度 */
+.ap-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid currentColor;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  line-height: 1.5;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.ap-score__unit {
+  font-size: 8px;
+  opacity: 0.7;
+  letter-spacing: 0.08em;
+}
+.ap-tier-critical {
+  color: var(--tier-critical);
+}
+.ap-tier-high {
+  color: var(--tier-high);
+}
+.ap-tier-medium {
+  color: var(--tier-medium);
+}
+.ap-tier-low {
+  color: var(--tier-low);
+}
+
+.ap-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.ap-chip[data-tone="danger"] {
+  color: var(--tier-critical);
+  border-color: color-mix(in srgb, var(--tier-critical) 45%, transparent);
+}
+.ap-chip[data-tone="warn"] {
+  color: var(--tier-high);
+  border-color: color-mix(in srgb, var(--tier-high) 40%, transparent);
+}
+.ap-chip[data-tone="today"] {
+  color: var(--pulse);
+  border-color: color-mix(in srgb, var(--pulse) 42%, transparent);
+}
+
+/* ---------------------------------------------------- 每日习惯（药丸行） */
+.ap-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 120ms ease;
+}
+.ap-pill:hover {
+  border-color: var(--line-strong);
+  background: var(--btn-bg-hover);
+}
+.ap-pill:active {
+  transform: scale(0.97);
+}
+/* 已打勾：整颗胶囊染上主色，一眼能扫出今天做到哪了 */
+.ap-pill[data-done="true"] {
+  border-color: var(--accent-border-soft);
+  background: var(--pulse-soft);
+  color: var(--pulse);
+}
+.ap-pill-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  background: var(--control-bg);
+}
+.ap-pill-input {
+  width: 96px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+
+/* ------------------------------------------------------------------ 按钮 */
+.ap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--btn-bg);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 120ms ease, color 160ms ease;
+}
+.ap-btn:hover {
+  background: var(--btn-bg-hover);
+  border-color: var(--line-strong);
+}
+.ap-btn:active {
+  transform: scale(0.97);
+}
+.ap-btn[data-variant="primary"] {
+  background: var(--pulse);
+  border-color: var(--pulse);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.ap-btn[data-variant="primary"]:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.ap-btn[data-variant="ghost"] {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-dim);
+}
+.ap-btn[data-variant="ghost"]:hover {
+  background: var(--ghost-hover);
+  color: var(--text);
+}
+.ap-btn[data-variant="danger"]:hover {
+  border-color: color-mix(in srgb, var(--tier-critical) 55%, transparent);
+  color: var(--tier-critical);
+}
+.ap-btn[data-active="true"] {
+  border-color: var(--accent-border-soft);
+  background: var(--pulse-soft);
+  color: var(--pulse);
+}
+.ap-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ap-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.ap-icon-btn:hover {
+  background: var(--hover-surface);
+  color: var(--text);
+}
+.ap-icon-btn[data-active="true"] {
+  color: var(--pulse);
+  border-color: var(--accent-border-ring);
+  background: var(--pulse-soft);
+}
+
+/* ------------------------------------------------------------- 同步状态 */
+.ap-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-faint);
+  box-shadow: 0 0 0 3px var(--halo);
+  transition: background 200ms ease, box-shadow 200ms ease;
+}
+.ap-sync-dot[data-status="online"] {
+  background: var(--pulse);
+  box-shadow: 0 0 10px 1px var(--accent-glow);
+}
+.ap-sync-dot[data-status="connecting"] {
+  background: var(--tier-medium);
+  animation: ap-breathe 1.2s ease-in-out infinite;
+}
+.ap-sync-dot[data-status="offline"] {
+  background: var(--tier-high);
+}
+.ap-sync-dot[data-status="error"],
+.ap-sync-dot[data-status="unauthorized"] {
+  background: var(--tier-critical);
+  box-shadow: 0 0 10px 1px var(--alert-glow);
+}
+
+.ap-spin {
+  animation: ap-rotate 900ms linear infinite;
+}
+@keyframes ap-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------------ 输入 */
+.ap-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field-bg);
+  color: var(--text);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.ap-input::placeholder {
+  color: var(--text-faint);
+}
+.ap-input:focus {
+  border-color: var(--accent-focus);
+  background: var(--field-bg-focus);
+  outline: none;
+}
+.ap-select {
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--select-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.ap-select:focus {
+  border-color: var(--accent-focus);
+  outline: none;
+}
+
+/* ------------------------------------------------------------- 能量 / 连击 */
+.ap-meter {
+  position: relative;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+.ap-meter__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--pulse), var(--accent-gradient-end));
+  transition: width 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ap-meter__fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
+  transform: translateX(-100%);
+  animation: ap-shimmer 2.4s ease-in-out infinite;
+}
+@keyframes ap-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.ap-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tier-high) 40%, transparent);
+  background: color-mix(in srgb, var(--tier-high) 12%, transparent);
+  color: var(--tier-high);
+  font-size: 12px;
+  font-weight: 600;
+}
+.ap-combo[data-hot="true"] {
+  animation: ap-breathe 1.5s ease-in-out infinite;
+}
+@keyframes ap-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tier-high) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--tier-high) 0%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------- 四象限 */
+.ap-quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ap-quad__cell {
+  display: flex;
+  flex-direction: column;
+  min-height: 128px;
+  padding: 8px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  background: var(--quad-cell);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.ap-quad__cell[data-drop="true"] {
+  border-color: var(--pulse);
+  border-style: solid;
+  background: var(--pulse-soft);
+}
+.ap-quad__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------------ 弹层 */
+.ap-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(900px 600px at 50% -10%, var(--overlay-glow), transparent 60%),
+    var(--overlay-base);
+  backdrop-filter: blur(20px);
+  animation: ap-fade 240ms ease;
+  padding-block: var(--safe-top) var(--safe-bottom);
+  padding-inline: var(--safe-left) var(--safe-right);
+}
+@keyframes ap-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.ap-sheet {
+  position: fixed;
+  inset-inline-end: 0;
+  inset-block: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100vw);
+  border-inline-start: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--sheet-bg-top), var(--sheet-bg-bottom));
+  padding-block: var(--safe-top) var(--safe-bottom);
+  backdrop-filter: blur(22px);
+  animation: ap-slide-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ap-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+/* 抬到底部小横条上方，否则提示会被挡住 */
+.ap-toast-stack {
+  bottom: calc(1.5rem + var(--safe-bottom));
+}
+
+.ap-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--toast-bg);
+  box-shadow: 0 20px 50px -22px var(--shadow-toast-color);
+  backdrop-filter: blur(14px);
+  animation: ap-rise 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes ap-rise {
+  from {
+    transform: translateY(14px) scale(0.96);
+    opacity: 0;
+  }
+}
+
+.ap-reveal {
+  animation: ap-reveal 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+@keyframes ap-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.ap-beat {
+  animation: ap-beat 380ms cubic-bezier(0.22, 1.4, 0.36, 1);
+}
+@keyframes ap-beat {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* -------------------------------------------------------- 响应式 & 无障碍 */
+@media (max-width: 768px) {
+  .ap-panel {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+  }
+  /* 手机上不存在「抽屉」，面板就是应用本体 */
+  .ap-panel,
+  .ap-panel[data-pinned="false"],
+  .ap-panel[data-open="false"] {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    transform: none;
+  }
+  .ap-stage,
+  .ap-edge {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 用户在设置里手动关闭动效时，效果同上 */
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
