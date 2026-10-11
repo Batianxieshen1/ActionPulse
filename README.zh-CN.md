@@ -2,6 +2,8 @@
 
   <img src="docs/screenshots/hero-light.png" width="880" alt="ActionPulse 浅色主题" />
 
+  <img src="docs/screenshots/demo.gif" width="880" alt="15 秒演示：自然语言录入、按紧迫度排序、打勾礼花、聚焦模式" />
+
   <h1>ActionPulse 脉冲行动</h1>
 
   <p><b>别再决定了，直接开始做。</b><br />

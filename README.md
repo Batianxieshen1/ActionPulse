@@ -2,6 +2,8 @@
 
   <img src="docs/screenshots/hero-dark.png" width="880" alt="ActionPulse — dark theme" />
 
+  <img src="docs/screenshots/demo.gif" width="880" alt="15-second demo: natural-language capture, urgency ranking, confetti on completion, focus mode" />
+
   <h1>ActionPulse</h1>
 
   <p><b>Stop deciding. Start doing.</b><br />
