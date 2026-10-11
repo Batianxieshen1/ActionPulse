@@ -59,7 +59,7 @@ Three commitments follow from it:
 
 ### Explainable urgency, not a black box
 
-Every task gets a score you can reason about, and the card shows which component contributed what:
+Every task gets a score you can reason about; expand a card to see exactly which component contributed what:
 
 ```
 score = clamp( round( (35·I + 40·D + 15·Q + 10·A) / 108 × 100 ), 0, 100 )
@@ -181,7 +181,7 @@ Sync is **peer-to-peer over your own LAN**. There is no cloud, no account, and n
    Laptop ──┘         (SSE push + optimistic locking)
 ```
 
-**The conflict model.** Every task merges per-field by last-write-wins on `updatedAt`; deletes leave tombstones so a removed task cannot be resurrected by a device that had not seen the delete yet. Habit history merges as a grow-only set. Writes carry the revision they were based on — if it is stale the server answers `409` with the current state, the client merges and retries (up to 3 times). Because merge is commutative and idempotent, retries converge instead of duplicating.
+**The conflict model.** Each task merges as a whole by last-write-wins on `updatedAt` — if two devices edit different fields of the same task at nearly the same time, the newer whole task wins; that simplicity is deliberate. Habit completions merge field-by-field as a grow-only set, so they cannot conflict. Deletes leave tombstones so a removed task cannot be resurrected by a device that had not seen the delete yet. Writes carry the revision they were based on — if it is stale the server answers `409` with the current state, the client merges and retries (up to 3 times). Because merge is commutative and idempotent, retries converge instead of duplicating.
 
 **Settings are deliberately never synced.** Turning your phone to silent should not mute your laptop. Theme, volume, and pomodoro length stay per-device.
 

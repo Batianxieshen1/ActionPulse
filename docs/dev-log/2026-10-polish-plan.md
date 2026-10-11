@@ -8,7 +8,7 @@
 
 ## A 卖点诚实度（最高优先）
 
-### A1 把评分分解搬上卡片 ⬜
+### A1 把评分分解搬上卡片 ✅
 
 - **证据**：`src/ui/` 层对 `rawScore / dueFactor / ageFactor` 零引用（grep 验证）。README 承诺「卡片上直接告诉你各分项贡献了多少」（EN: "the card shows which component contributed what"），实际只有总分徽章 + hover 档位提示。头号卖点没有到达用户的路。
 - **改法**：

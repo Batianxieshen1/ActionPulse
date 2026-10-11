@@ -1003,3 +1003,55 @@ select {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
+
+/* =========================================================================
+   紧迫度分解（TaskCard 展开详情）：四行「标签 · 条形 · 得分」
+   条形按各分项相对自身理论满分（35/48/15/10）的占比填充；
+   轨道/填充语言与 .ap-meter 同源，颜色全走 token，双主题自动成立。
+   ========================================================================= */
+.ap-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 11px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--pulse-soft);
+}
+.ap-breakdown__row {
+  display: grid;
+  grid-template-columns: 56px 1fr 48px;
+  align-items: center;
+  gap: 8px;
+}
+.ap-breakdown__label {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.ap-breakdown__track {
+  position: relative;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+.ap-breakdown__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: 999px;
+  background: var(--pulse);
+  transition: width 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ap-breakdown__value {
+  font-size: 11px;
+  text-align: right;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ap-breakdown__total {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}

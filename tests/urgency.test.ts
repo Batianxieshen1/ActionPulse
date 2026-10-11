@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  COMPONENT_MAX,
   MAX_RAW,
   WEIGHTS,
   ageFactor,
@@ -8,6 +9,7 @@ import {
   rawScore,
   selectFocusTask,
   sortByUrgency,
+  urgencyComponents,
   urgencyScore,
   urgencyTier,
 } from "../src/domain/urgency";
@@ -200,5 +202,32 @@ describe("selectFocusTask", () => {
   it("returns null when nothing is left", () => {
     expect(selectFocusTask([], TODAY)).toBeNull();
     expect(selectFocusTask([makeTask({ done: true })], TODAY)).toBeNull();
+  });
+});
+
+describe("urgencyComponents（卡片「为什么是这个分数」分解）", () => {
+  it("四个分项之和等于 rawScore", () => {
+    const task = makeTask({
+      importance: "high",
+      due: "2026-10-07",
+      estimateMinutes: 10,
+      createdAt: "2026-09-25T09:00:00",
+    });
+    const parts = urgencyComponents(task, TODAY);
+    expect(parts.imp + parts.due + parts.quick + parts.age).toBe(rawScore(task, TODAY));
+  });
+
+  it("已知任务的每个分项与手算一致（高优+超期+15分钟内+搁置满一周 = 满分 108）", () => {
+    const task = makeTask({
+      importance: "high",
+      due: "2026-10-07",
+      estimateMinutes: 10,
+      createdAt: "2026-09-25T09:00:00",
+    });
+    expect(urgencyComponents(task, TODAY)).toEqual({ imp: 35, due: 48, quick: 15, age: 10, total: 108 });
+  });
+
+  it("分项满分常量 = 权重 × 各因子最高档", () => {
+    expect(COMPONENT_MAX).toEqual({ imp: 35, due: 48, quick: 15, age: 10 });
   });
 });

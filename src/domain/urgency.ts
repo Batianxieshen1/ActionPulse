@@ -67,13 +67,37 @@ export function ageFactor(createdAt: string, today: string): number {
   return Math.min(days / 7, 1);
 }
 
+/** 各分项的理论满分（分解条形的分母）= 权重 × 该因子最高档。 */
+export const COMPONENT_MAX = {
+  imp: WEIGHTS.imp * IMPORTANCE_FACTOR.high,
+  due: WEIGHTS.due * DUE_FACTOR.overdue,
+  quick: WEIGHTS.quick * QUICK_FACTOR.fast,
+  age: WEIGHTS.age,
+} as const;
+
+export interface UrgencyComponents {
+  imp: number;
+  due: number;
+  quick: number;
+  age: number;
+  /** 四项之和，等于 rawScore。 */
+  total: number;
+}
+
+/**
+ * 各分项的加权原始分。UI 的「为什么是这个分数」分解直接用它 ——
+ * 界面与公式从同一个函数流出，永不脱节。
+ */
+export function urgencyComponents(task: Task, today: string = todayKey()): UrgencyComponents {
+  const imp = WEIGHTS.imp * IMPORTANCE_FACTOR[task.importance];
+  const due = WEIGHTS.due * dueFactor(task.due, today);
+  const quick = WEIGHTS.quick * quickFactor(task.estimateMinutes);
+  const age = WEIGHTS.age * ageFactor(task.createdAt, today);
+  return { imp, due, quick, age, total: imp + due + quick + age };
+}
+
 export function rawScore(task: Task, today: string = todayKey()): number {
-  return (
-    WEIGHTS.imp * IMPORTANCE_FACTOR[task.importance] +
-    WEIGHTS.due * dueFactor(task.due, today) +
-    WEIGHTS.quick * quickFactor(task.estimateMinutes) +
-    WEIGHTS.age * ageFactor(task.createdAt, today)
-  );
+  return urgencyComponents(task, today).total;
 }
 
 /** 0 ~ 100 的整数紧迫度分。 */

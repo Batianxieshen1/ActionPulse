@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, GripVertical, Trash2 } from "lucide-react";
 import { daysBetween } from "../domain/dates";
 import type { Importance, Quadrant, Task } from "../domain/types";
 import { MicroStepList } from "./MicroStepList";
+import { ScoreBreakdown } from "./ScoreBreakdown";
 import { TaskCheck } from "./TaskCheck";
 import { UrgencyBadge } from "./UrgencyBadge";
 
@@ -217,6 +218,8 @@ export function TaskCard({
 
           {open ? (
             <div className="mt-2 space-y-2.5">
+              {score !== null ? <ScoreBreakdown task={task} today={today} score={score} /> : null}
+
               <MicroStepList
                 task={task}
                 onToggleSubtask={(subId) => onToggleSubtask(task, subId)}
