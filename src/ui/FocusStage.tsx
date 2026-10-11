@@ -272,6 +272,21 @@ export function FocusStage({
               ) : null}
             </div>
           </div>
+        ) : tasks.length === 0 ? (
+          // tasks 是待办池：空 = 全部完成，不是被跳过。两种到达路径的文案必须分开，
+          // 否则用户刚清空清单，屏幕却说他「跳过了一切」。
+          <div className="max-w-[380px] space-y-4 text-center">
+            <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
+            <p className="text-[15px]">清单清空了</p>
+            <p className="text-[12.5px] leading-6 text-[var(--text-faint)]">
+              今天想做的都做完了 —— 休息一下吧，或者回清单记下一件事。
+            </p>
+            <div className="flex justify-center gap-2">
+              <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
+                回到清单
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="max-w-[380px] space-y-4 text-center">
             <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
