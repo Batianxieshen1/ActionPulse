@@ -59,13 +59,13 @@
 
 ## C 工程加固（中优先）
 
-### C1 战报「专注时长」加合并策略脚注 ⬜
+### C1 战报「专注时长」加合并策略脚注 ✅
 
 - **证据**：`daily.focusMinutes` 多端合并取最大值（dev-log 已记录取舍），但战报界面未说明——用户自己发现"数字少了"会伤信任。
 - **改法**：`DebriefSheet.tsx` 专注时长行下加小字「多端之间取较大值合并——宁可少算，不做虚高」。
 - **验收**：战报目视脚注；文案与 dev-log 表述一致。
 
-### C2 服务端冒烟测试 ⬜
+### C2 服务端冒烟测试 ✅
 
 - **证据**：`npm start` → `/api/health` → 鉴权 → 存取这条链无任何自动化守护（`lan.test.ts` 只测地址收集）；SW 事故的教训是"测试全绿 ≠ 链路通"。
 - **改法**：`tests/serverSmoke.test.ts`：spawn `node server/index.mjs`（随机高位端口 + 临时 `AP_DATA_DIR`）→ 轮询 `/api/health` 期待 200 与 `ok:true` → 无 token `PUT /api/state` 期待 401 → 结束 kill + 清理临时目录。

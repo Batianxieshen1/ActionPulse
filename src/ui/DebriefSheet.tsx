@@ -71,6 +71,12 @@ export function DebriefSheet({ stats, onClose }: Props) {
               ))}
             </div>
 
+            {/* 合并策略亮出来：数字取的是各设备的最大值。自己发现「数字少了」会伤信任，
+                主动说清楚就把「缺陷」变成「诚实的设计」。 */}
+            <p className="px-0.5 text-[10.5px] leading-4 text-[var(--text-faint)]">
+              专注时长在多端之间取较大值合并 —— 宁可少算，不做虚高。
+            </p>
+
             {stats.taskTitles.length > 0 ? (
               <div>
                 <div className="ap-label mb-1.5">今天完成的事</div>
