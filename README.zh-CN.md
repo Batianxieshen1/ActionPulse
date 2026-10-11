@@ -9,7 +9,6 @@
 
   <a href="https://github.com/Batianxieshen1/ActionPulse/actions/workflows/ci.yml"><img src="https://github.com/Batianxieshen1/ActionPulse/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/tests-305%20passing-brightgreen.svg" alt="305 个测试通过" />
   <img src="https://img.shields.io/badge/backend%20dependencies-0-brightgreen.svg" alt="服务端零依赖" />
 
   <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
@@ -44,8 +43,8 @@
 score = clamp( round( (35·I + 40·D + 15·Q + 10·A) / 108 × 100 ), 0, 100 )
 
   I  重要度        high / medium / low
-  D  截止压力      已超期 1.2 · 今天 1.0 · 3 天内 0.85 · 7 天内 0.65 · 14 天内 0.45 · 更远 0.25
-  Q  四象限
+  D  截止压力      已超期 1.2 · 今天 1.0 · 明天 0.7 · 3 天内 0.4 · 更远或无截止 0.1
+  Q  速赢加成      ≤15 分钟 1.0 · ≤60 分钟 0.5 · 更久或未估时 0.2
   A  搁置补偿      min(创建天数 / 7, 1)   ← 防止小事被无限期搁置
 ```
 
@@ -100,7 +99,7 @@ score = clamp( round( (35·I + 40·D + 15·Q + 10·A) / 108 × 100 ), 0, 100 )
 | 语法 | 含义 |
 | :--- | :--- |
 | `!high` `!med` `!low`（也接受 `!h` `!m` `!l`） | 重要度 |
-| `今天` `明天` `后天` `周一`…`周日`（也接受 today / tomorrow / monday…） | 截止日期 |
+| `今天` `明天` `后天` `周一`…`周日` | 截止日期 |
 | `~5m` `~30m` `~1h` `~20分钟` | 预估耗时——**开放区间**，写 `~45m` 一样有效 |
 
 解析结果会**实时显示成胶囊**：看不见的解析器就是不可信的解析器。文本标记优先于下拉框，而且不会污染下拉框记住的值。
@@ -121,6 +120,8 @@ score = clamp( round( (35·I + 40·D + 15·Q + 10·A) / 108 × 100 ), 0, 100 )
 ## 快速开始
 
 只需要 **Node 20+**。没有数据库、没有 Docker、不需要注册账号。
+
+> 不想装 Node？[在线体验](https://batianxieshen1.github.io/ActionPulse/)（纯客户端演示）——数据只存在你自己的浏览器里；没有多端同步和 AI 语义拆解，其余功能完整。
 
 ```bash
 git clone https://github.com/Batianxieshen1/ActionPulse.git

@@ -9,7 +9,6 @@
 
   <a href="https://github.com/Batianxieshen1/ActionPulse/actions/workflows/ci.yml"><img src="https://github.com/Batianxieshen1/ActionPulse/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
-  <img src="https://img.shields.io/badge/tests-305%20passing-brightgreen.svg" alt="305 tests passing" />
   <img src="https://img.shields.io/badge/backend%20dependencies-0-brightgreen.svg" alt="Zero backend dependencies" />
   <img src="https://img.shields.io/badge/node-%E2%89%A5%2020-informational.svg" alt="Node 20+" />
 
@@ -64,8 +63,8 @@ Every task gets a score you can reason about, and the card shows which component
 score = clamp( round( (35·I + 40·D + 15·Q + 10·A) / 108 × 100 ), 0, 100 )
 
   I  importance        high / medium / low
-  D  deadline pressure overdue 1.2 · today 1.0 · ≤3d 0.85 · ≤7d 0.65 · ≤14d 0.45 · later 0.25
-  Q  Eisenhower quadrant
+  D  deadline pressure overdue 1.2 · today 1.0 · tomorrow 0.7 · ≤3d 0.4 · later or none 0.1
+  Q  quick win         ≤15 min 1.0 · ≤60 min 0.5 · longer or untimed 0.2
   A  age factor        min(daysSinceCreated / 7, 1)   ← rescues stalled tasks
 ```
 
@@ -112,18 +111,18 @@ When everything due today is clear, you get a one-line banner — not a modal. T
 Type the metadata right into the title. No dropdown, no mouse:
 
 ```
-Write Q3 report !high tomorrow ~30m
+Write Q3 report !high 明天 ~30m
 ```
 
 | Syntax | Meaning |
 | :--- | :--- |
 | `!high` `!med` `!low` (also `!h` `!m` `!l`) | importance |
-| `today` `tomorrow` `monday`…`sunday` (also 今天 / 明天 / 周一…周日) | due date |
+| `今天` `明天` `后天` `周一`…`周日` (Chinese date keywords) | due date |
 | `~5m` `~30m` `~1h` `~20min` | estimate — **open range**, so `~45m` works too |
 
 What was parsed shows up live as chips below the input, because a parser you cannot see is a parser you cannot trust. Text markers beat the dropdowns, and they never overwrite the dropdowns’ remembered values.
 
-> **`monday` and 周一 always resolve to the *next* Monday, including today — never a date in the past.**
+> **`周一` always resolves to the *next* Monday, including today — never a date in the past.**
 > Otherwise typing 周一 on a Wednesday would instantly mark the task overdue and shoot it to the top of the list: you save effort with natural language and the app punishes you for it.
 
 ### Dark and light, with WCAG AA enforced by a test
@@ -139,6 +138,8 @@ Switching themes never flashes: an inline script in `<head>` sets `data-theme` b
 ## Quick start
 
 Requirements: **Node 20+**. Nothing else — no database, no Docker, no account.
+
+> No Node? [Try it in your browser](https://batianxieshen1.github.io/ActionPulse/) (client-only demo) — your data stays in your own browser; no multi-device sync and no AI breakdown, everything else works.
 
 ```bash
 git clone https://github.com/Batianxieshen1/ActionPulse.git
