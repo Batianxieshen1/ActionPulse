@@ -41,6 +41,20 @@ export function DebriefSheet({ stats, onClose }: Props) {
     { label: "累计完成", value: String(stats.totalCompleted), hint: "件" },
   ];
 
+  // 近 7 天估时分布的行。条形复用 .ap-breakdown__track/__fill（同一套轨道语言），
+  // 以本窗口内的最大桶为满格 —— 看相对构成，不看绝对时长。
+  const mixRows = (() => {
+    const mix = stats.weekEstimateMix;
+    const rows = [
+      { label: "≤15 分钟", count: mix.quick },
+      { label: "16–60 分钟", count: mix.medium },
+      { label: ">60 分钟", count: mix.slow },
+      { label: "未估时", count: mix.untimed },
+    ];
+    const max = Math.max(...rows.map((row) => row.count), 1);
+    return rows.map((row) => ({ ...row, max }));
+  })();
+
   return (
     <>
       <div className="fixed inset-0 z-40" style={{ background: "var(--scrim)" }} onClick={onClose} aria-hidden="true" />
@@ -76,6 +90,31 @@ export function DebriefSheet({ stats, onClose }: Props) {
             <p className="px-0.5 text-[10.5px] leading-4 text-[var(--text-faint)]">
               专注时长在多端之间取较大值合并 —— 宁可少算，不做虚高。
             </p>
+
+            {stats.weekEstimateMix.total > 0 ? (
+              <div>
+                <div className="ap-label mb-1.5">近 7 天完成分布</div>
+                <div className="space-y-1.5">
+                  {mixRows.map(({ label, count, max }) => (
+                    <div key={label} className="ap-breakdown__row">
+                      <span className="ap-breakdown__label">{label}</span>
+                      <span className="ap-breakdown__track" aria-hidden="true">
+                        <span
+                          className="ap-breakdown__fill"
+                          style={{ width: `${Math.round((count / max) * 100)}%` }}
+                        />
+                      </span>
+                      <span className="ap-breakdown__value ap-mono">×{count}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-faint)]">
+                  {stats.weekEstimateMix.quickPercent >= 60 && stats.weekEstimateMix.total >= 3
+                    ? `速赢占比 ${stats.weekEstimateMix.quickPercent}% —— 算法在喂你小任务，记得也喂点大的。`
+                    : `速赢占比 ${stats.weekEstimateMix.quickPercent}%。`}
+                </p>
+              </div>
+            ) : null}
 
             {stats.taskTitles.length > 0 ? (
               <div>

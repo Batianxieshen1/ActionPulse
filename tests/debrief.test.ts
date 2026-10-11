@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDebrief, debriefMarkdown } from "../src/domain/debrief";
+import { buildDebrief, debriefMarkdown, estimateMix } from "../src/domain/debrief";
 import { defaultState } from "../src/domain/validation";
 import { createTask } from "../src/store/taskStore";
 import type { AppState, DailyHabit } from "../src/domain/types";
@@ -138,5 +138,59 @@ describe("debriefMarkdown", () => {
     expect(md).not.toContain("专注时长");
     expect(md).not.toContain("连击峰值");
     expect(md).not.toContain("日常习惯");
+  });
+});
+
+describe("estimateMix（近 7 天完成分布——Q 因子观察项的数据回路）", () => {
+  function doneTask(estimateMinutes: number | null, completedAtIso: string) {
+    return {
+      ...createTask({ title: "任务", estimateMinutes }, NOW),
+      done: true,
+      completedAt: completedAtIso,
+    };
+  }
+
+  it("按估时分桶，15/16 和 60/61 是桶边界", () => {
+    const nowIso = new Date(NOW).toISOString();
+    const mix = estimateMix(
+      [doneTask(15, nowIso), doneTask(16, nowIso), doneTask(60, nowIso), doneTask(61, nowIso), doneTask(null, nowIso)],
+      TODAY,
+    );
+    expect(mix).toMatchObject({ quick: 1, medium: 2, slow: 1, untimed: 1, total: 5 });
+    expect(mix.quickPercent).toBe(20);
+  });
+
+  it("只统计近 7 天（含今天），7 天前的完成不计入", () => {
+    const inWindow = doneTask(5, new Date(Date.parse("2026-10-02T09:00:00")).toISOString());
+    const tooOld = doneTask(5, new Date(Date.parse("2026-10-01T09:00:00")).toISOString());
+    expect(estimateMix([inWindow, tooOld], TODAY).total).toBe(1);
+  });
+
+  it("未完成、已归档、无完成时间的任务一律不计入", () => {
+    const pending = createTask({ title: "没做完" }, NOW);
+    const archived = { ...doneTask(10, new Date(NOW).toISOString()), archived: true };
+    const mix = estimateMix([pending, archived], TODAY);
+    expect(mix.total).toBe(0);
+    expect(mix.quickPercent).toBe(0);
+  });
+
+  it("空清单得到全零分布，quickPercent 不产生 NaN", () => {
+    expect(estimateMix([], TODAY)).toEqual({
+      quick: 0,
+      medium: 0,
+      slow: 0,
+      untimed: 0,
+      total: 0,
+      quickPercent: 0,
+    });
+  });
+
+  it("buildDebrief 带出分布，Markdown 战报包含分布行", () => {
+    const todayTask = doneTask(10, new Date(NOW).toISOString());
+    const stats = buildDebrief(stateWith({ tasks: [todayTask] }), TODAY);
+    expect(stats.weekEstimateMix.quickPercent).toBe(100);
+    const markdown = debriefMarkdown(stats);
+    expect(markdown).toContain("近 7 天完成分布");
+    expect(markdown).toContain("速赢 100%");
   });
 });

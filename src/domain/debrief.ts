@@ -4,10 +4,10 @@
  * 纯函数：给定 state 与 today，产出数字与一段可复制的 Markdown。
  * 刻意**不读时钟、不读随机数** —— 战报是要被复制出去的文本，必须可复现。
  */
-import { dateKeyOf } from "./dates";
+import { dateKeyOf, daysBetween } from "./dates";
 import { habitsCompletion } from "./habits";
 import { streakDays } from "./streak";
-import type { AppState } from "./types";
+import type { AppState, Task } from "./types";
 
 export interface DebriefStats {
   today: string;
@@ -23,6 +23,45 @@ export interface DebriefStats {
   /** 连续有完成记录的天数 */
   streakDays: number;
   totalCompleted: number;
+  /** 近 7 天完成分布（Q 因子观察项的数据回路，见 dev-log/q-factor-tradeoff.md） */
+  weekEstimateMix: EstimateMix;
+}
+
+export interface EstimateMix {
+  /** ≤15 分钟 */
+  quick: number;
+  /** 16 ~ 60 分钟 */
+  medium: number;
+  /** > 60 分钟 */
+  slow: number;
+  /** 未估时 */
+  untimed: number;
+  total: number;
+  /** 速赢占比（0~100 整数）；total 为 0 时为 0，不产生 NaN。 */
+  quickPercent: number;
+}
+
+/**
+ * 近 7 天（含今天）完成的任务按估时分桶。
+ * 存在的理由：速赢因子给小任务系统性上浮通道是刻意设计，但它是否在
+ * 「喂芝麻」要靠数据回答 —— 这就是那份数据（q-factor-tradeoff.md 的观察项）。
+ */
+export function estimateMix(tasks: readonly Task[], today: string): EstimateMix {
+  const buckets = { quick: 0, medium: 0, slow: 0, untimed: 0 };
+  for (const task of tasks) {
+    if (!task.done || task.archived || !task.completedAt) continue;
+    const day = dateKeyOf(task.completedAt);
+    if (!day) continue;
+    const diff = daysBetween(day, today);
+    if (diff < 0 || diff > 6) continue;
+    if (task.estimateMinutes === null) buckets.untimed += 1;
+    else if (task.estimateMinutes <= 15) buckets.quick += 1;
+    else if (task.estimateMinutes <= 60) buckets.medium += 1;
+    else buckets.slow += 1;
+  }
+  const total = buckets.quick + buckets.medium + buckets.slow + buckets.untimed;
+  const quickPercent = total === 0 ? 0 : Math.round((buckets.quick / total) * 100);
+  return { ...buckets, total, quickPercent };
 }
 
 export function buildDebrief(state: AppState, today: string): DebriefStats {
@@ -43,6 +82,7 @@ export function buildDebrief(state: AppState, today: string): DebriefStats {
     comboPeak: state.daily.comboPeak[today] ?? 0,
     streakDays: streakDays(state.stats.completionDates, today),
     totalCompleted: state.stats.totalCompleted,
+    weekEstimateMix: estimateMix(state.tasks, today),
   };
 }
 
@@ -69,6 +109,22 @@ export function debriefMarkdown(stats: DebriefStats): string {
   }
   if (stats.comboPeak > 0) {
     lines.push("- 🔥 今日连击峰值：**x" + stats.comboPeak + "**");
+  }
+  if (stats.weekEstimateMix.total > 0) {
+    const mix = stats.weekEstimateMix;
+    lines.push(
+      "- ⏳ 近 7 天完成分布：≤15 分钟 ×" +
+        mix.quick +
+        " · 16–60 分钟 ×" +
+        mix.medium +
+        " · >60 分钟 ×" +
+        mix.slow +
+        " · 未估时 ×" +
+        mix.untimed +
+        "（速赢 " +
+        mix.quickPercent +
+        "%）",
+    );
   }
   lines.push("- 🗓 连续天数：**" + stats.streakDays + "** 天");
   lines.push("- 📈 累计完成：**" + stats.totalCompleted + "** 件");

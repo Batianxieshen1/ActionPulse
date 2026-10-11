@@ -106,7 +106,7 @@ Tasks **with** a deadline never hibernate: that is a commitment to someone else,
 
 ### 🏆 Daily debrief
 
-When everything due today is clear, you get a one-line banner — not a modal. Tap the energy bar any time for the full report: tasks done, focus minutes, peak combo, habit completion, current streak. Copy it as Markdown with one click.
+When everything due today is clear, you get a one-line banner — not a modal. Tap the energy bar any time for the full report: tasks done, focus minutes, peak combo, habit completion, current streak. Copy it as Markdown with one click. The report also shows the last-7-days estimate mix — whether the quick-win factor keeps feeding you small tasks is now checkable in data.
 
 ### ⌨️ Natural-language capture
 
