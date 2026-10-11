@@ -11,6 +11,7 @@ These are the working notes written while building ActionPulse — reviews, plan
 | [SPEC-REVIEW.md](SPEC-REVIEW.md) | A line-by-line audit of the original requirements spec, written **before any code existed**. It lists every place the spec was silent, ambiguous, or impossible as designed. |
 | [prd-v2.1-review.md](prd-v2.1-review.md) | Pre-implementation review of the five advanced modules (habits, blind box, kickstart, hibernation, debrief). Flags 5 defects, 4 ambiguities, 5 disagreements — and how each was resolved. |
 | [light-theme-plan.md](light-theme-plan.md) | The plan for adding a light theme, including the token-migration strategy and its acceptance criteria. |
+| [q-factor-tradeoff.md](q-factor-tradeoff.md) | A product-watch note: the quick-win factor gives small tasks a systematic lift that can nearly tie a 15-minute medium task with a big high-priority one. What to watch in the debrief data, and which knobs to turn if it misbehaves. |
 
 ---
 
