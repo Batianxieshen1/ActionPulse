@@ -1,0 +1,47 @@
+name: Pages
+
+# 纯客户端演示部署：dist 直接发布到 GitHub Pages。
+# 客户端是 local-first 的 —— 没有同步服务也能完整使用（README FAQ 有说明），
+# 所以静态托管即可体验，只是没有多端同步与 AI 语义拆解。
+# base 必须是 /ActionPulse/：Pages 按 <user>.github.io/<repo>/ 子路径托管。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # 与 CI 相同的完整校验链（typecheck + public 脚本语法守卫），只是 base 指向 Pages 子路径
+      - name: Build for Pages subpath
+        run: npm run build:pages
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
