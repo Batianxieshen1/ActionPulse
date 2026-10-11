@@ -50,16 +50,17 @@ export function PomodoroRing({ timer, label, size = 148 }: Props) {
       </div>
 
       <div className="flex items-center gap-1.5">
+        {/* 计时控制在台面上是配角，主行动永远是「完成了」——不能两个绿色主按钮同屏 */}
         {timer.status === "running" ? (
           <button type="button" className="ap-btn" onClick={timer.pause}>
             <Pause size={13} /> 暂停
           </button>
         ) : timer.status === "paused" ? (
-          <button type="button" className="ap-btn" data-variant="primary" onClick={() => timer.resume()}>
+          <button type="button" className="ap-btn" onClick={() => timer.resume()}>
             <Play size={13} /> 继续
           </button>
         ) : (
-          <button type="button" className="ap-btn" data-variant="primary" onClick={() => timer.start()}>
+          <button type="button" className="ap-btn" onClick={() => timer.start()}>
             <Play size={13} /> 开始
           </button>
         )}

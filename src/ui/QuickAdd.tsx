@@ -99,8 +99,14 @@ export function QuickAdd({ onAdd }: Props) {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-1.5">
+        {/* 标记优先于下拉框（submit 里的 ?? 顺序）。被标记接管的字段下拉框已不生效，
+            置灰禁用让「谁说了算」可见可懂 —— 双事实源并存是视觉谎言。逐字段判断，
+            因为标记往往只覆盖一部分，其余下拉仍是生效的缺省值。 */}
         <select
           className="ap-select text-[11px]"
+          style={{ opacity: parsed.importance !== undefined ? 0.45 : undefined }}
+          disabled={parsed.importance !== undefined}
+          title={parsed.importance !== undefined ? "已由标题里的标记指定" : undefined}
           value={importance}
           onChange={(event) => setImportance(event.target.value as Importance)}
           aria-label="重要度"
@@ -112,6 +118,9 @@ export function QuickAdd({ onAdd }: Props) {
 
         <select
           className="ap-select text-[11px]"
+          style={{ opacity: parsed.due !== undefined ? 0.45 : undefined }}
+          disabled={parsed.due !== undefined}
+          title={parsed.due !== undefined ? "已由标题里的标记指定" : undefined}
           value={due}
           onChange={(event) => setDue(event.target.value)}
           aria-label="截止时间"
@@ -125,6 +134,9 @@ export function QuickAdd({ onAdd }: Props) {
 
         <select
           className="ap-select text-[11px]"
+          style={{ opacity: parsed.estimateMinutes !== undefined ? 0.45 : undefined }}
+          disabled={parsed.estimateMinutes !== undefined}
+          title={parsed.estimateMinutes !== undefined ? "已由标题里的标记指定" : undefined}
           value={estimate}
           onChange={(event) => setEstimate(event.target.value)}
           aria-label="预估耗时"

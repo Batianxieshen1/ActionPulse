@@ -1055,3 +1055,11 @@ select {
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
+
+/* 顶栏分隔线：清单/四象限（视图）与 智能/手动（排序引擎）是两个维度 */
+.ap-topbar-divider {
+  width: 1px;
+  align-self: stretch;
+  margin-block: 3px;
+  background: var(--line-strong);
+}

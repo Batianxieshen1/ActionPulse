@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ListChecks } from "lucide-react";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { TaskCard } from "./TaskCard";
@@ -63,14 +62,11 @@ export function TaskList({
   }, [tasks, lingering]);
 
   if (tasks.length === 0 && lingering.length === 0) {
+    // 面板空态刻意压成单行弱提示：完整叙事（能量环、语录、指引）在右侧台面，同屏不重复
     return (
-      <div className="ap-card flex flex-col items-center gap-2 px-4 py-10 text-center">
-        <ListChecks size={22} className="text-[var(--text-faint)]" />
-        <p className="text-[13px] text-[var(--text-dim)]">清单是空的</p>
-        <p className="max-w-[240px] text-[11.5px] leading-5 text-[var(--text-faint)]">
-          写下第一件事就行，不用先想清楚顺序 —— 系统会替你算。
-        </p>
-      </div>
+      <p className="px-2 py-4 text-center text-[11.5px] leading-5 text-[var(--text-faint)]">
+        清单是空的 —— 写下第一件事就行，系统会替你算。
+      </p>
     );
   }
 

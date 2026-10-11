@@ -146,7 +146,10 @@ export function Header({
           </button>
         </div>
 
-        <div className="ml-auto flex rounded-[10px] border border-[var(--line)] p-0.5">
+        {/* 视图（看什么）与排序引擎（怎么排）是两个维度，细线示意分界 */}
+        <span className="ap-topbar-divider ml-auto" aria-hidden="true" />
+
+        <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
           <button
             type="button"
             className="ap-btn"
