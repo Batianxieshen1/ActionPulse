@@ -35,6 +35,25 @@
 
 ---
 
+## 界面速览
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/hero-dark.png" alt="深色主题" /><br /><sub><b>深色 — 脉冲控制台</b></sub></td>
+    <td width="50%"><img src="docs/screenshots/hero-light.png" alt="浅色主题" /><br /><sub><b>浅色 — Daylight Desk</b></sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/focus.png" alt="聚焦模式" /><br /><sub><b>只做一件事的聚焦模式</b></sub></td>
+    <td><img src="docs/screenshots/debrief.png" alt="今日战报" /><br /><sub><b>今日战报</b></sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/mobile-dark.png" width="320" alt="移动端深色" /><br /><sub><b>移动端 — 深色</b></sub></td>
+    <td><img src="docs/screenshots/mobile-light.png" width="320" alt="移动端浅色" /><br /><sub><b>移动端 — 浅色</b></sub></td>
+  </tr>
+</table>
+
+---
+
 ## 功能
 
 ### 可解释的紧迫度，不是黑箱
@@ -251,6 +270,12 @@ tests/            305 个单元测试，19 个文件（vitest）
 </details>
 
 <details>
+<summary><b>会加标签 / 项目分组 / 循环任务吗？</b></summary>
+
+大概率不会。ActionPulse 的差异化在「开始做」，不在「管理」——管理型功能每加一个，定位就淡一分。循环需求已经以「每日习惯」的形态存在（而且永不产生逾期债务）；其余的，上面提到的专业工具做得更好。
+</details>
+
+<details>
 <summary><b>我的数据会被上传吗？</b></summary>
 
 不会。数据存在浏览器的 localStorage 和你运行服务的那台机器的 `./data/state.json` 里。整个应用唯一的对外请求是 LLM 接口，而且只有你主动配置了才会有——默认关闭，走离线模板。
@@ -278,7 +303,7 @@ tests/            305 个单元测试，19 个文件（vitest）
 
 这个项目背后的完整过程——动手前对需求规范的逐条审计、浅色模式的实施计划、以及那些「看起来没问题、后来发现不是」的清单——都在 **[docs/dev-log](docs/dev-log/README.md)**。
 
-里面记录了：一个 Service Worker 静默注册失败、而 183 个测试全绿的事故；以及原本的深色主题直到写出对比度断言才暴露出来的 WCAG 不达标。
+里面记录了：一个 Service Worker 静默注册失败、而 183 个测试全绿的事故；原本的深色主题直到写出对比度断言才暴露出来的 WCAG 不达标；以及一条仍在进行中的观察——速赢因子会不会让人一直「捡芝麻」（[q-factor-tradeoff](docs/dev-log/q-factor-tradeoff.md)）。
 
 ---
 

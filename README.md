@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="docs/screenshots/hero-dark.png" width="880" alt="ActionPulse — dark theme" />
+  <img src="docs/screenshots/hero-light.png" width="880" alt="ActionPulse — light theme" />
 
   <img src="docs/screenshots/demo.gif" width="880" alt="15-second demo: natural-language capture, urgency ranking, confetti on completion, focus mode" />
 
@@ -253,6 +253,18 @@ They are better than this at being todo apps. ActionPulse is not trying to win t
 </details>
 
 <details>
+<summary><b>Is the interface available in English?</b></summary>
+
+Not yet — the UI is Chinese-only for now. The README and engineering docs are bilingual, and the product is deliberately built for personal use first.
+</details>
+
+<details>
+<summary><b>Will you add labels / projects / recurring tasks?</b></summary>
+
+Probably not. ActionPulse's edge is getting started, not managing — every managing feature added dilutes that. Recurring work already exists as daily rituals (which never go overdue); for the rest, better tools exist.
+</details>
+
+<details>
 <summary><b>Is my data sent anywhere?</b></summary>
 
 No. State lives in your browser’s local storage and in `./data/state.json` on the machine you run the server on. The only outbound request the app ever makes is to an LLM endpoint, and only if you configure one — it is off by default and falls back to offline templates.
@@ -280,7 +292,7 @@ No. It is a PWA, installable from the browser. On a secure context it also runs 
 
 The engineering notes behind this project — pre-implementation spec audits, the plan for the light theme, and the list of things that looked fine and turned out not to be — live in **[docs/dev-log](docs/dev-log/README.md)**.
 
-They include a service worker that silently failed to register while 183 tests stayed green, and a WCAG failure in the original dark theme that only surfaced once contrast was actually asserted.
+They include a service worker that silently failed to register while 183 tests stayed green, a WCAG failure in the original dark theme that only surfaced once contrast was actually asserted — and an ongoing watch on the algorithm's own assumptions: whether the quick-win factor trains you to keep picking peas ([q-factor-tradeoff](docs/dev-log/q-factor-tradeoff.md)).
 
 ---
 

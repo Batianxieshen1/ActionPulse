@@ -73,22 +73,22 @@
 
 ## D 内容对称（低优先）
 
-### D1 中文 README 补界面图库 ⬜
+### D1 中文 README 补界面图库 ✅
 
 - **证据**：EN 有四张截图（聚焦/战报/移动端×2），zh 没有；两版信息不对称。
 - **改法**：zh 在「它想解决什么」后加 `## 界面速览`，复用 EN 的表格结构 + 中文说明。
 
-### D2 EN hero 换浅色版 ⬜
+### D2 EN hero 换浅色版 ✅
 
 - **证据**：EN 顶部 暗色 hero → 浅色 GIF → 正文，色温跳变；zh 是浅色 hero 无此问题。
 - **改法**：EN hero `hero-dark.png` → `hero-light.png`（暗色仍保留在图库与移动端截图里，两个主题都有展示位）。
 
-### D3 EN FAQ 增「界面语言」条目 ⬜
+### D3 EN FAQ 增「界面语言」条目 ✅
 
 - **证据**：UI 中文-only，但 EN README 未告知国际访客。
 - **改法**：FAQ 加 "Is the interface available in English?" → 暂时只有中文界面；文档双语；产品优先自用。
 
-### D4 README 的 Development log 段落提及 Q 因子观察 ⬜
+### D4 README 的 Development log 段落提及 Q 因子观察 ✅
 
 - **改法**：两版各加一句：dev-log 里还记录了对算法假设的持续观察（链接 q-factor-tradeoff.md）。
 
@@ -104,7 +104,7 @@
   4. 两版 README 的「今日战报」条目补一句；`package.json` 版本 2.1.0 → 2.2.0。
 - **验收**：测试全绿；浏览器实测战报含分布与提示。
 
-### E2 FAQ 增「明确不做」条目 ⬜
+### E2 FAQ 增「明确不做」条目 ✅
 
 - **改法**：两版 FAQ 加「会加标签 / 项目 / 循环任务吗？」→ 大概率不：差异化在"开始做"，功能列表膨胀稀释定位（与现有第一条 FAQ 的态度一致）。
 
