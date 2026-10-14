@@ -51,6 +51,7 @@ export interface ActionPulseApi {
   toggleTask: (task: Task, origin?: { x: number; y: number }) => void;
   addHabit: (title: string, emoji?: string) => void;
   toggleHabit: (habit: DailyHabit, origin?: { x: number; y: number }) => void;
+  completeHabit: (habit: DailyHabit) => void;
   archiveHabit: (id: string) => void;
   unarchiveHabit: (id: string) => void;
   toggleSubtask: (task: Task, subId: string) => void;
@@ -182,6 +183,29 @@ export function useActionPulse(): ActionPulseApi {
     [state.habits, dispatch, settings, reduceMotion, bounce, push],
   );
 
+  const completeHabit = useCallback(
+    (habit: DailyHabit) => {
+      const now = Date.now();
+      const day = dateKeyOf(now);
+      const currentHabit = state.habits.find((item) => item.id === habit.id);
+      if (!day || !currentHabit || currentHabit.archived || currentHabit.completedDates.includes(day)) return;
+
+      const remaining = activeHabits(state.habits).filter(
+        (other) => other.id !== currentHabit.id && !other.completedDates.includes(day),
+      ).length;
+      dispatch({ type: "habit/complete", id: currentHabit.id, now });
+      bounce();
+      if (settings.soundEnabled) playChime(settings.soundVolume, 1);
+      if (settings.vibrationEnabled) vibrate("tick");
+      if (settings.confettiEnabled && !reduceMotion) void celebrateSmall();
+      if (settings.encourageEnabled) {
+        if (remaining === 0) push(allClearQuote(now), "hot");
+        else push(startQuote(now), "normal");
+      }
+    },
+    [state.habits, dispatch, settings, reduceMotion, bounce, push],
+  );
+
   const toggleSubtask = useCallback(
     (task: Task, subId: string) => {
       const sub = task.subtasks.find((entry) => entry.id === subId);
@@ -232,6 +256,7 @@ export function useActionPulse(): ActionPulseApi {
     toggleTask,
     addHabit,
     toggleHabit,
+    completeHabit,
     archiveHabit,
     unarchiveHabit,
     toggleSubtask,

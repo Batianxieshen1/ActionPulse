@@ -281,6 +281,14 @@ describe("每日习惯（v2.1 模块一）", () => {
     expect(reducer(prev, { type: "habit/complete", id: prev.habits[0].id, now: Number.NaN })).toBe(prev);
   });
 
+  it("habit/complete 不会完成已归档习惯", () => {
+    let prev = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
+    const id = prev.habits[0].id;
+    prev = reducer(prev, { type: "habit/archive", id });
+
+    expect(reducer(prev, { type: "habit/complete", id, now: NOW })).toBe(prev);
+  });
+
   it("归档只是隐藏，不删除数据", () => {
     let state = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
     const id = state.habits[0].id;

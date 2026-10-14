@@ -267,7 +267,7 @@ export function reducer(state: AppState, action: Action): AppState {
       const today = dateKeyOf(action.now);
       if (!today) return state;
       const target = state.habits.find((habit) => habit.id === action.id);
-      if (!target) return state;
+      if (!target || target.archived) return state;
       const completed = completeHabitDate(target, today, action.now);
       if (completed === target) return state;
       return {

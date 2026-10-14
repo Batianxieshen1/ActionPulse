@@ -92,6 +92,8 @@ Focus time is banked even if you bail early, so no effort goes uncounted.
 
 A compact row of pills at the top of the panel for the things you do every day. Tap to complete, tap again to undo.
 
+Want to act on one right now? The collapsed row offers the next unfinished ritual; expand it to focus a specific one. Focus completion checks off today's ritual without creating a duplicate task.
+
 - **They never go overdue.** A habit that was not done yesterday does not turn into a debt today. Cross-day reset is *derived* from the current date, so there is no reset timer to misfire.
 - **Sync cannot conflict.** Completion history is a grow-only set, so two devices merge by set union — commutative, associative, idempotent. Your phone and laptop can both check things off offline and they will always converge.
 - **Finishing all of them does not snatch the row away.** It waits 1.5 seconds before collapsing so the completion registers.
@@ -165,7 +167,7 @@ The terminal prints a URL containing a pairing token. Open it on your desktop �
 | :--- | :--- |
 | `npm start` | Build + serve everything on port 5273 |
 | `npm run dev` | Vite HMR on 5273 + API on 5274, one command |
-| `npm test` | 305 unit tests |
+| `npm test` | 324 unit tests |
 | `npm run build` | Typecheck + script syntax guard + Vite build |
 | `npm run gen:icons` | Regenerate PWA icons |
 
@@ -231,7 +233,7 @@ React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · lucide-react · canvas-con
 ## Testing
 
 ```
-tests/            305 unit tests across 19 files (vitest)
+tests/            324 unit tests across 20 files (vitest)
 ```
 
 The suite covers the parts that are actually hard to get right:
