@@ -1,12 +1,6 @@
 import { COMPONENT_MAX, MAX_RAW, urgencyComponents } from "../domain/urgency";
 import type { Task } from "../domain/types";
-
-const ROWS = [
-  { key: "imp", label: "重要度" },
-  { key: "due", label: "截止压力" },
-  { key: "quick", label: "速赢加成" },
-  { key: "age", label: "搁置补偿" },
-] as const;
+import { useT } from "../i18n";
 
 function formatPart(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
@@ -26,11 +20,18 @@ export function ScoreBreakdown({
   today: string;
   score: number;
 }) {
+  const t = useT();
+  const rows = [
+    { key: "imp", label: t("score.imp") },
+    { key: "due", label: t("score.due") },
+    { key: "quick", label: t("score.quick") },
+    { key: "age", label: t("score.age") },
+  ] as const;
   const parts = urgencyComponents(task, today);
   return (
     <div className="ap-breakdown">
-      <span className="ap-label">为什么是这个分数</span>
-      {ROWS.map(({ key, label }) => (
+      <span className="ap-label">{t("score.title")}</span>
+      {rows.map(({ key, label }) => (
         <div key={key} className="ap-breakdown__row">
           <span className="ap-breakdown__label">{label}</span>
           <span className="ap-breakdown__track" aria-hidden="true">
@@ -39,11 +40,11 @@ export function ScoreBreakdown({
               style={{ width: `${Math.round((parts[key] / COMPONENT_MAX[key]) * 100)}%` }}
             />
           </span>
-          <span className="ap-breakdown__value ap-mono">{formatPart(parts[key])} 分</span>
+          <span className="ap-breakdown__value ap-mono">{formatPart(parts[key])} {t("score.unit")}</span>
         </div>
       ))}
       <p className="ap-breakdown__total ap-mono">
-        合计 {formatPart(parts.total)} / {MAX_RAW} → 紧迫度 {score} 分
+        {t("score.total", { raw: formatPart(parts.total), max: MAX_RAW, score })}
       </p>
     </div>
   );

@@ -1,13 +1,7 @@
 import { useState } from "react";
 import type { Quadrant, Task } from "../domain/types";
+import { useT } from "../i18n";
 import { TaskCard } from "./TaskCard";
-
-const CELLS: { id: Quadrant; title: string; hint: string }[] = [
-  { id: "q1", title: "重要 且 紧急", hint: "立刻做" },
-  { id: "q2", title: "重要 不紧急", hint: "排进日程" },
-  { id: "q3", title: "紧急 不重要", hint: "尽快清掉" },
-  { id: "q4", title: "不重要 不紧急", hint: "考虑删掉" },
-];
 
 interface Props {
   buckets: Record<Quadrant | "inbox", Task[]>;
@@ -35,6 +29,14 @@ export function QuadrantBoard({
   onRemove,
   onSetQuadrant,
 }: Props) {
+  const t = useT();
+  // 板头标题/提示词：quad.q1Title~q4Title 与 quad.q1Hint/q3Hint 为本轮补齐的字典键。
+  const cells: { id: Quadrant; title: string; hint: string }[] = [
+    { id: "q1", title: t("quad.q1Title"), hint: t("quad.q1Hint") },
+    { id: "q2", title: t("quad.q2Title"), hint: t("dormant.schedule") },
+    { id: "q3", title: t("quad.q3Title"), hint: t("quad.q3Hint") },
+    { id: "q4", title: t("quad.q4Title"), hint: t("dormant.consider") },
+  ];
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
@@ -91,7 +93,7 @@ export function QuadrantBoard({
             </div>
           ))}
           {list.length === 0 ? (
-            <p className="py-3 text-center ap-t-2xs text-[var(--text-faint)]">拖到这里</p>
+            <p className="py-3 text-center ap-t-2xs text-[var(--text-faint)]">{t("quad.dropHere")}</p>
           ) : null}
         </div>
       </section>
@@ -101,9 +103,9 @@ export function QuadrantBoard({
   return (
     <div className="space-y-3">
       <div className="ap-quad">
-        {CELLS.map((cell) => renderCell(cell.id, cell.title, cell.hint))}
+        {cells.map((cell) => renderCell(cell.id, cell.title, cell.hint))}
       </div>
-      {renderCell("inbox", "收集箱", "还没归类")}
+      {renderCell("inbox", t("quad.inbox"), t("quad.unclassified"))}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { isDoneToday } from "../domain/habits";
 import type { DailyHabit, Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { usePomodoro } from "../hooks/usePomodoro";
+import { useT } from "../i18n";
 import { PomodoroRing } from "./PomodoroTimer";
 import { TaskCheck } from "./TaskCheck";
 import { UrgencyBadge } from "./UrgencyBadge";
@@ -49,6 +50,7 @@ const KICKSTART_MINUTES = 2;
  */
 export function FocusStage(props: Props) {
   const { today, pomodoroMinutes, onExit, onTimerFinish, onFocusMinutes } = props;
+  const t = useT();
   const taskProps = props.kind === "task" ? props : null;
   const habitProps = props.kind === "habit" ? props : null;
   const tasks = taskProps?.tasks ?? [];
@@ -153,21 +155,21 @@ export function FocusStage(props: Props) {
   const dueText = (() => {
     if (!current?.due) return null;
     const diff = daysBetween(today, current.due);
-    if (diff < 0) return `已超期 ${-diff} 天`;
-    if (diff === 0) return "今天截止";
-    if (diff === 1) return "明天截止";
-    return `${diff} 天后截止`;
+    if (diff < 0) return t("focus.overdue", { n: -diff });
+    if (diff === 0) return t("focus.dueToday");
+    if (diff === 1) return t("focus.dueTomorrow");
+    return t("focus.dueIn", { n: diff });
   })();
 
   return (
-    <div className="ap-overlay" role="dialog" aria-modal="true" aria-label="聚焦当下">
+    <div className="ap-overlay" role="dialog" aria-modal="true" aria-label={t("focus.title")}>
       <header className="flex items-center justify-between px-5 py-4 sm:px-8">
         <div className="flex items-center gap-2">
-          <span className="ap-label">聚焦当下</span>
-          <span className="ap-mono ap-t-xs text-[var(--text-faint)]">/ 只做这一件</span>
+          <span className="ap-label">{t("focus.title")}</span>
+          <span className="ap-mono ap-t-xs text-[var(--text-faint)]">/ {t("focus.onlyOne")}</span>
         </div>
         <button type="button" className="ap-btn" data-variant="ghost" onClick={onExit}>
-          <X size={14} /> 退出聚焦
+          <X size={14} /> {t("focus.exit")}
         </button>
       </header>
 
@@ -176,19 +178,19 @@ export function FocusStage(props: Props) {
           habitProps.habit ? (
             <div className="w-full max-w-[560px] space-y-7 text-center">
               <div className="space-y-3">
-                <span className="ap-chip">日常习惯</span>
+                <span className="ap-chip">{t("focus.habitChip")}</span>
                 <div aria-hidden="true" className="text-4xl">{habitProps.habit.emoji}</div>
                 <h1 className="ap-t-xl leading-[1.3] font-semibold tracking-tight sm:ap-t-2xl">
                   {habitProps.habit.title}
                 </h1>
-                <p className="ap-label">把今天的日常，变成现在的一小步。</p>
+                <p className="ap-label">{t("focus.habitIntro")}</p>
               </div>
 
               {isHabitDone ? (
                 <div className="space-y-4" role="status" aria-live="polite">
-                  <p className="ap-t-md text-[var(--pulse)]">今天已完成，做得好。</p>
+                  <p className="ap-t-md text-[var(--pulse)]">{t("focus.habitDone")}</p>
                   <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
-                    回到清单
+                    {t("focus.backToList")}
                   </button>
                 </div>
               ) : (
@@ -198,7 +200,7 @@ export function FocusStage(props: Props) {
                   data-variant="primary"
                   onClick={completeCurrentHabit}
                 >
-                  <Check size={16} strokeWidth={3} /> 完成今日习惯
+                  <Check size={16} strokeWidth={3} /> {t("focus.habitComplete")}
                 </button>
               )}
 
@@ -212,7 +214,7 @@ export function FocusStage(props: Props) {
                     disabled={isHabitDone}
                     onClick={() => switchMode(false)}
                   >
-                    {pomodoroMinutes} 分钟
+                    {t("focus.minutes", { n: pomodoroMinutes })}
                   </button>
                   <button
                     type="button"
@@ -222,28 +224,28 @@ export function FocusStage(props: Props) {
                     disabled={isHabitDone}
                     onClick={() => switchMode(true)}
                   >
-                    <Zap size={12} /> 2 分钟启动
+                    <Zap size={12} /> {t("focus.kickstart")}
                   </button>
                 </div>
 
                 {kickstart && timer.status === "idle" && !isHabitDone ? (
                   <p className="max-w-[38ch] text-center ap-t-sm leading-6 text-[var(--text-faint)]">
-                    只要做两分钟，就能战胜拖延 —— 两分钟后你可以停，也可以接着做。
+                    {t("focus.kickstartHint")}
                   </p>
                 ) : null}
 
                 <PomodoroRing
                   timer={timer}
-                  label={`${minutes} 分钟`}
+                  label={t("focus.minutes", { n: minutes })}
                   size={132}
                   disabled={isHabitDone}
                 />
 
                 {refillReady && !isHabitDone ? (
                   <div className="flex flex-col items-center gap-2">
-                    <p className="ap-t-sm text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
+                    <p className="ap-t-sm text-[var(--tier-high)]">{t("focus.refillHint")}</p>
                     <button type="button" className="ap-btn" data-variant="primary" onClick={refill}>
-                      <Zap size={13} /> 续杯 {pomodoroMinutes} 分钟
+                      <Zap size={13} /> {t("focus.refill", { n: pomodoroMinutes })}
                     </button>
                   </div>
                 ) : null}
@@ -252,10 +254,10 @@ export function FocusStage(props: Props) {
           ) : (
             <div className="max-w-[380px] space-y-4 text-center">
               <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-              <p className="ap-t-md">这个日常习惯暂时不可用</p>
-              <p className="ap-t-sm text-[var(--text-faint)]">它可能已被归档或移除。</p>
+              <p className="ap-t-md">{t("focus.habitUnavailable")}</p>
+              <p className="ap-t-sm text-[var(--text-faint)]">{t("focus.habitUnavailableBody")}</p>
               <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
-                回到清单
+                {t("focus.backToList")}
               </button>
             </div>
           )
@@ -270,7 +272,7 @@ export function FocusStage(props: Props) {
                   </span>
                 ) : null}
                 {current.estimateMinutes !== null ? (
-                  <span className="ap-chip">预估 {current.estimateMinutes} 分钟</span>
+                  <span className="ap-chip">{t("focus.estimate", { n: current.estimateMinutes })}</span>
                 ) : null}
               </div>
 
@@ -290,7 +292,7 @@ export function FocusStage(props: Props) {
                     <span className="ap-mono w-4 text-right ap-t-xs text-[var(--text-faint)]">{index + 1}</span>
                     <TaskCheck
                       checked={sub.done}
-                      label={sub.done ? `取消完成 ${sub.title}` : `完成 ${sub.title}`}
+                      label={sub.done ? t("focus.subUndo", { title: sub.title }) : t("focus.subComplete", { title: sub.title })}
                       onToggle={() => onToggleSubtask?.(current, sub.id)}
                     />
                     <span
@@ -305,7 +307,7 @@ export function FocusStage(props: Props) {
             ) : (
               <div className="space-y-2.5">
                 <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
-                  还没有微步骤。直接在这里拆一版 —— 把「这件事」切成 3~5 个 5 分钟能做的小动作，启动阻力会小很多。
+                  {t("focus.noSteps")}
                 </p>
                 <button
                   type="button"
@@ -314,7 +316,7 @@ export function FocusStage(props: Props) {
                   onClick={() => onBreakdown?.(current)}
                 >
                   {breakingDown ? <Loader2 size={13} className="ap-spin" /> : <Sparkles size={13} />}
-                  {breakingDown ? "正在拆解…" : "自动拆解"}
+                  {breakingDown ? t("focus.breakingDown") : t("focus.autoBreakdown")}
                 </button>
               </div>
             )}
@@ -333,14 +335,14 @@ export function FocusStage(props: Props) {
                   setDismissed([]);
                 }}
               >
-                <Check size={16} strokeWidth={3} /> 完成了
+                <Check size={16} strokeWidth={3} /> {t("focus.done")}
               </button>
               <button type="button" className="ap-btn" onClick={skip}>
-                <Shuffle size={14} /> 不是这个
+                <Shuffle size={14} /> {t("focus.notThis")}
               </button>
               {swapNote ? (
                 <span className="ap-label" style={{ color: "var(--tier-high)" }}>
-                  已跳过，换下一件
+                  {t("focus.swapped")}
                 </span>
               ) : null}
             </div>
@@ -354,7 +356,7 @@ export function FocusStage(props: Props) {
                   data-active={kickstart ? undefined : "true"}
                   onClick={() => switchMode(false)}
                 >
-                  {pomodoroMinutes} 分钟
+                  {t("focus.minutes", { n: pomodoroMinutes })}
                 </button>
                 <button
                   type="button"
@@ -363,23 +365,23 @@ export function FocusStage(props: Props) {
                   data-active={kickstart ? "true" : undefined}
                   onClick={() => switchMode(true)}
                 >
-                  <Zap size={12} /> 2 分钟启动
+                  <Zap size={12} /> {t("focus.kickstart")}
                 </button>
               </div>
 
               {kickstart && timer.status === "idle" ? (
                 <p className="max-w-[38ch] text-center ap-t-sm leading-6 text-[var(--text-faint)]">
-                  只要做两分钟，就能战胜拖延 —— 两分钟后你可以停，也可以接着做。
+                  {t("focus.kickstartHint")}
                 </p>
               ) : null}
 
-              <PomodoroRing timer={timer} label={`${minutes} 分钟`} size={132} />
+              <PomodoroRing timer={timer} label={t("focus.minutes", { n: minutes })} size={132} />
 
               {refillReady ? (
                 <div className="flex flex-col items-center gap-2">
-                  <p className="ap-t-sm text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
+                  <p className="ap-t-sm text-[var(--tier-high)]">{t("focus.refillHint")}</p>
                   <button type="button" className="ap-btn" data-variant="primary" onClick={refill}>
-                    <Zap size={13} /> 续杯 {pomodoroMinutes} 分钟
+                    <Zap size={13} /> {t("focus.refill", { n: pomodoroMinutes })}
                   </button>
                 </div>
               ) : null}
@@ -390,29 +392,25 @@ export function FocusStage(props: Props) {
           // 否则用户刚清空清单，屏幕却说他「跳过了一切」。
           <div className="max-w-[380px] space-y-4 text-center">
             <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-            <p className="ap-t-md">清单清空了</p>
-            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
-              今天想做的都做完了 —— 休息一下吧，或者回清单记下一件事。
-            </p>
+            <p className="ap-t-md">{t("focus.allDoneTitle")}</p>
+            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">{t("focus.allDoneBody")}</p>
             <div className="flex justify-center gap-2">
               <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
-                回到清单
+                {t("focus.backToList")}
               </button>
             </div>
           </div>
         ) : (
           <div className="max-w-[380px] space-y-4 text-center">
             <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-            <p className="ap-t-md">候选都被你跳过了</p>
-            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
-              这说明今天真正想做的可能不在清单里，或者现在该休息。
-            </p>
+            <p className="ap-t-md">{t("focus.skippedTitle")}</p>
+            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">{t("focus.skippedBody")}</p>
             <div className="flex justify-center gap-2">
               <button type="button" className="ap-btn" onClick={reset}>
-                <Shuffle size={13} /> 重新看一遍
+                <Shuffle size={13} /> {t("focus.review")}
               </button>
               <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
-                回到清单
+                {t("focus.backToList")}
               </button>
             </div>
           </div>

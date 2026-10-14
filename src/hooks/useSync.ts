@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppState } from "../domain/types";
+import { tr } from "../i18n";
 import { SyncEngine, type SyncStatus } from "../sync/client";
 import { clearSyncToken, resolveSyncConfig, saveSyncToken, type SyncConfig } from "../sync/session";
 
@@ -101,7 +102,7 @@ export function useSync({ state, enabled, applyRemote }: Options): SyncApi {
       if (disposed) return;
       // 服务端还是空的（rev 0）而本地已经有内容 -> 把本地推上去
       if (engine.rev === 0 && stateRef.current.tasks.length > 0) await pushNow();
-      setLastError(engine.status === "unauthorized" ? "token 不正确，请重新配对" : null);
+      setLastError(engine.status === "unauthorized" ? tr("sync.badToken") : null);
     })();
 
     let source: EventSource | null = null;

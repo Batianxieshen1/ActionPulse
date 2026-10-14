@@ -1,7 +1,7 @@
 {
   "name": "actionpulse",
   "private": false,
-  "version": "2.2.0",
+  "version": "2.3.0",
   "type": "module",
   "description": "Local-first task cockpit: explainable urgency scoring, one-thing focus mode, LAN sync with zero-dependency backend.",
   "license": "MIT",

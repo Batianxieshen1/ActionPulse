@@ -2,6 +2,7 @@ import { Target } from "lucide-react";
 import { daysBetween } from "../domain/dates";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
+import { useT } from "../i18n";
 import { UrgencyBadge } from "./UrgencyBadge";
 
 interface Props {
@@ -17,13 +18,14 @@ interface Props {
  * 能量环缩小成 40px 的进度示意（数字在紧邻的能量槽里，不重复）。
  */
 export function MiniStage({ focus, today, percent, onEnterFocus }: Props) {
+  const t = useT();
   const due = focus.due;
   const dueText = due
     ? due < today
-      ? `超期 ${-daysBetween(today, due)} 天`
+      ? t("card.overdue", { n: -daysBetween(today, due) })
       : due === today
-        ? "今天截止"
-        : `${daysBetween(today, due)} 天后`
+        ? t("card.dueToday")
+        : t("card.dueIn", { n: daysBetween(today, due) })
     : null;
 
   const size = 40;
@@ -48,7 +50,7 @@ export function MiniStage({ focus, today, percent, onEnterFocus }: Props) {
       </svg>
 
       <div className="min-w-0 flex-1 text-center">
-        <span className="ap-label">现在只做这件事</span>
+        <span className="ap-label">{t("stage.nowDoThis")}</span>
         <p className="ap-t-base mt-0.5 truncate font-semibold">{focus.title}</p>
       </div>
 
@@ -61,8 +63,8 @@ export function MiniStage({ focus, today, percent, onEnterFocus }: Props) {
         type="button"
         className="ap-icon-btn shrink-0"
         data-active="true"
-        aria-label="进入聚焦模式"
-        title="进入聚焦模式（Alt + F）"
+        aria-label={t("stage.enterFocus")}
+        title={t("header.focusTitle")}
         onClick={onEnterFocus}
       >
         <Target size={16} />

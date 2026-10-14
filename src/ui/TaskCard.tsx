@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, GripVertical, Trash2 } from "lucide-react";
 import { daysBetween } from "../domain/dates";
 import type { Importance, Quadrant, Task } from "../domain/types";
+import { tr, useT } from "../i18n";
 import { MicroStepList } from "./MicroStepList";
 import { ScoreBreakdown } from "./ScoreBreakdown";
 import { TaskCheck } from "./TaskCheck";
@@ -15,27 +16,19 @@ interface DueInfo {
 function dueLabel(due: string | null, today: string): DueInfo | null {
   if (!due) return null;
   const diff = daysBetween(today, due);
-  if (diff < 0) return { text: `超期 ${-diff} 天`, tone: "danger" };
-  if (diff === 0) return { text: "今天截止", tone: "today" };
-  if (diff === 1) return { text: "明天截止", tone: "warn" };
-  if (diff <= 3) return { text: `${diff} 天后`, tone: "warn" };
-  return { text: `${due.slice(5)} 截止` };
+  if (diff < 0) return { text: tr("card.overdue", { n: -diff }), tone: "danger" };
+  if (diff === 0) return { text: tr("card.dueToday"), tone: "today" };
+  if (diff === 1) return { text: tr("card.dueTomorrow"), tone: "warn" };
+  if (diff <= 3) return { text: tr("card.dueIn", { n: diff }), tone: "warn" };
+  return { text: tr("card.dueOn", { date: due.slice(5) }) };
 }
 
 function estimateLabel(minutes: number | null): string | null {
   if (minutes === null) return null;
-  if (minutes < 60) return `${minutes} 分钟`;
+  if (minutes < 60) return `${minutes} ${tr("common.minute")}`;
   const hours = minutes / 60;
-  return Number.isInteger(hours) ? `${hours} 小时` : `${hours.toFixed(1)} 小时`;
+  return Number.isInteger(hours) ? `${hours} ${tr("common.hour")}` : `${hours.toFixed(1)} ${tr("common.hour")}`;
 }
-
-const IMPORTANCE_LABEL: Record<Importance, string> = { high: "高", medium: "中", low: "低" };
-const QUADRANT_LABEL: Record<Quadrant, string> = {
-  q1: "重要且紧急",
-  q2: "重要不紧急",
-  q3: "紧急不重要",
-  q4: "不重要不紧急",
-};
 
 export interface TaskCardProps {
   task: Task;
@@ -83,6 +76,18 @@ export function TaskCard({
   onDragOverCard,
   onDropCard,
 }: TaskCardProps) {
+  const t = useT();
+  const importanceLabel: Record<Importance, string> = {
+    high: t("card.impHigh"),
+    medium: t("card.impMed"),
+    low: t("card.impLow"),
+  };
+  const quadrantLabel: Record<Quadrant, string> = {
+    q1: t("quad.q1"),
+    q2: t("quad.q2"),
+    q3: t("quad.q3"),
+    q4: t("quad.q4"),
+  };
   const [open, setOpen] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -136,8 +141,8 @@ export function TaskCard({
             onDragEnd={onDragEnd}
             role="button"
             tabIndex={-1}
-            aria-label="拖拽调整顺序"
-            title="拖拽调整顺序"
+            aria-label={t("card.grip")}
+            title={t("card.grip")}
           >
             <GripVertical size={14} />
           </span>
@@ -146,7 +151,7 @@ export function TaskCard({
         <div className="pt-0.5">
           <TaskCheck
             checked={task.done}
-            label={task.done ? `取消完成：${task.title}` : `完成：${task.title}`}
+            label={task.done ? t("check.undo", { title: task.title }) : t("check.complete", { title: task.title })}
             onToggle={(event) => {
               const rect = event.currentTarget.getBoundingClientRect();
               onToggle(task, {
@@ -179,7 +184,7 @@ export function TaskCard({
               <button
                 type="button"
                 className="ap-card__title flex-1 cursor-text text-left ap-t-base leading-6 font-medium"
-                title="点击编辑标题"
+                title={t("card.editTitle")}
                 onClick={() => {
                   setTitleDraft(task.title);
                   setEditing(true);
@@ -196,7 +201,7 @@ export function TaskCard({
               className="ap-icon-btn"
               style={{ width: 26, height: 26 }}
               aria-expanded={open}
-              aria-label={open ? "收起详情" : "展开详情"}
+              aria-label={open ? t("card.collapse") : t("card.expand")}
               onClick={() => setOpen((value) => !value)}
             >
               {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -213,10 +218,10 @@ export function TaskCard({
               ) : null}
               {subTotal > 0 ? (
                 <span className="ap-chip" data-tone={subDone === subTotal ? "today" : undefined}>
-                  微步 {subDone}/{subTotal}
+                  {t("card.microsteps", { done: subDone, total: subTotal })}
                 </span>
               ) : null}
-              {manual && task.quadrant ? <span className="ap-chip">{QUADRANT_LABEL[task.quadrant]}</span> : null}
+              {manual && task.quadrant ? <span className="ap-chip">{quadrantLabel[task.quadrant]}</span> : null}
             </div>
           ) : null}
 
@@ -234,20 +239,20 @@ export function TaskCard({
 
               <div className="grid grid-cols-3 gap-2">
                 <label className="space-y-1">
-                  <span className="ap-label block">重要度</span>
+                  <span className="ap-label block">{t("card.impLabel")}</span>
                   <select
                     className="ap-select w-full"
                     value={task.importance}
                     onChange={(event) => onUpdate(task.id, { importance: event.target.value as Importance })}
                   >
-                    <option value="high">高（{IMPORTANCE_LABEL.high}）</option>
-                    <option value="medium">中（{IMPORTANCE_LABEL.medium}）</option>
-                    <option value="low">低（{IMPORTANCE_LABEL.low}）</option>
+                    <option value="high">{t("card.impHigh")}（{importanceLabel.high}）</option>
+                    <option value="medium">{t("card.impMed")}（{importanceLabel.medium}）</option>
+                    <option value="low">{t("card.impLow")}（{importanceLabel.low}）</option>
                   </select>
                 </label>
 
                 <label className="space-y-1">
-                  <span className="ap-label block">截止</span>
+                  <span className="ap-label block">{t("card.dueLabel")}</span>
                   <input
                     type="date"
                     className="ap-input"
@@ -258,7 +263,7 @@ export function TaskCard({
                 </label>
 
                 <label className="space-y-1">
-                  <span className="ap-label block">预估（分钟）</span>
+                  <span className="ap-label block">{t("card.estimateLabel")}</span>
                   <input
                     type="number"
                     min={0}
@@ -266,7 +271,7 @@ export function TaskCard({
                     className="ap-input ap-mono"
                     style={{ padding: "5px 7px", fontSize: "var(--fs-sm)" }}
                     value={task.estimateMinutes ?? ""}
-                    placeholder="未估"
+                    placeholder={t("card.estimatePlaceholder")}
                     onChange={(event) => {
                       const raw = event.target.value;
                       onUpdate(task.id, { estimateMinutes: raw === "" ? null : Math.max(0, Number(raw)) });
@@ -277,7 +282,7 @@ export function TaskCard({
 
               {manual ? (
                 <label className="block space-y-1">
-                  <span className="ap-label block">四象限</span>
+                  <span className="ap-label block">{t("header.board")}</span>
                   <select
                     className="ap-select w-full"
                     value={task.quadrant ?? ""}
@@ -285,22 +290,22 @@ export function TaskCard({
                       onUpdate(task.id, { quadrant: (event.target.value || null) as Quadrant | null })
                     }
                   >
-                    <option value="">未归类（收集箱）</option>
-                    <option value="q1">{QUADRANT_LABEL.q1}</option>
-                    <option value="q2">{QUADRANT_LABEL.q2}</option>
-                    <option value="q3">{QUADRANT_LABEL.q3}</option>
-                    <option value="q4">{QUADRANT_LABEL.q4}</option>
+                    <option value="">{t("card.unclassifiedOption")}</option>
+                    <option value="q1">{quadrantLabel.q1}</option>
+                    <option value="q2">{quadrantLabel.q2}</option>
+                    <option value="q3">{quadrantLabel.q3}</option>
+                    <option value="q4">{quadrantLabel.q4}</option>
                   </select>
                 </label>
               ) : null}
 
               <label className="block space-y-1">
-                <span className="ap-label block">备注</span>
+                <span className="ap-label block">{t("card.notesLabel")}</span>
                 <textarea
                   className="ap-input"
                   rows={2}
                   style={{ fontSize: "var(--fs-sm)", resize: "vertical" }}
-                  placeholder="补充一点上下文，或写下卡住的地方…"
+                  placeholder={t("misc.notesPlaceholder")}
                   value={task.notes}
                   onChange={(event) => onUpdate(task.id, { notes: event.target.value })}
                 />
@@ -317,7 +322,7 @@ export function TaskCard({
                         disabled={index === 0}
                         onClick={() => onMove(task.id, index - 1)}
                       >
-                        上移
+                        {t("card.moveUp")}
                       </button>
                       <button
                         type="button"
@@ -326,7 +331,7 @@ export function TaskCard({
                         disabled={index === total - 1}
                         onClick={() => onMove(task.id, index + 1)}
                       >
-                        下移
+                        {t("card.moveDown")}
                       </button>
                     </>
                   ) : null}
@@ -334,14 +339,14 @@ export function TaskCard({
 
                 {confirmRemove ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="ap-t-xs text-[var(--text-dim)]">确定删除？</span>
+                    <span className="ap-t-xs text-[var(--text-dim)]">{t("card.deleteShort")}</span>
                     <button
                       type="button"
                       className="ap-btn"
                       style={{ padding: "3px 9px", fontSize: "var(--fs-xs)", color: "var(--tier-critical)" }}
                       onClick={() => onRemove(task.id)}
                     >
-                      删除
+                      {t("card.deleteBtn")}
                     </button>
                     <button
                       type="button"
@@ -349,7 +354,7 @@ export function TaskCard({
                       style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
                       onClick={() => setConfirmRemove(false)}
                     >
-                      取消
+                      {t("common.cancel")}
                     </button>
                   </div>
                 ) : (
@@ -361,7 +366,7 @@ export function TaskCard({
                     onClick={() => setConfirmRemove(true)}
                   >
                     <Trash2 size={11} />
-                    删除
+                    {t("card.deleteBtn")}
                   </button>
                 )}
               </div>

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
+import { useT } from "../i18n";
 import { TaskCard } from "./TaskCard";
 import { TaskCheck } from "./TaskCheck";
 
@@ -40,6 +41,7 @@ export function TaskList({
   onRemove,
   onMove,
 }: Props) {
+  const t = useT();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [lingering, setLingering] = useState<Task[]>([]);
@@ -78,7 +80,7 @@ export function TaskList({
           <div className="ap-card ap-reveal flex items-center gap-2.5 px-3 py-2.5">
             <TaskCheck
               checked={demoDone}
-              label={demoDone ? "示例已完成" : "完成：试试打勾"}
+              label={demoDone ? t("list.demoDoneLabel") : t("list.demoLabel")}
               onToggle={(event) => {
                 if (demoDone) return;
                 const rect = event.currentTarget.getBoundingClientRect();
@@ -90,15 +92,15 @@ export function TaskList({
               }}
             />
             <div className="min-w-0 flex-1">
-              <p className="ap-t-base font-medium">{demoDone ? "就是这个感觉" : "试试看：点一下圆圈"}</p>
+              <p className="ap-t-base font-medium">{demoDone ? t("list.demoDoneTitle") : t("list.demoTitle")}</p>
               <p className="ap-t-2xs mt-0.5 text-[var(--text-faint)]">
-                {demoDone ? "礼花、水晶音、连击——都在真的任务里等你" : "打勾的瞬间会发生什么"}
+                {demoDone ? t("list.demoDoneSubtitle") : t("list.demoSubtitle")}
               </p>
             </div>
           </div>
         ) : null}
         <p className="px-2 py-1 text-center ap-t-xs leading-5 text-[var(--text-faint)]">
-          清单是空的 —— 写下第一件事就行，系统会替你算。
+          {t("list.empty")}
         </p>
       </div>
     );

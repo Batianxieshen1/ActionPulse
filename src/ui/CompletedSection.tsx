@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Archive, ChevronDown, ChevronRight, Undo2 } from "lucide-react";
 import type { Task } from "../domain/types";
+import { useT } from "../i18n";
 import { TaskCheck } from "./TaskCheck";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 /** 今日已完成。打勾后任务从主列表移到这里，可一键撤销。 */
 export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }: Props) {
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   if (tasks.length === 0) return null;
@@ -28,8 +30,7 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
           onClick={() => setOpen((value) => !value)}
         >
           {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-          今日已完成
-          <span className="ap-mono text-[var(--text-faint)]">{tasks.length}</span>
+          {t("completed.row", { n: tasks.length })}
         </button>
         {open ? (
           <button
@@ -38,9 +39,9 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
             data-variant="ghost"
             style={{ padding: "5px 8px", fontSize: "var(--fs-xs)" }}
             onClick={onArchiveAll}
-            title="归档后不再出现在清单里（数据仍保留在备份中）"
+            title={t("completed.archiveNote")}
           >
-            <Archive size={12} /> 归档
+            <Archive size={12} /> {t("completed.archive")}
           </button>
         ) : null}
       </div>
@@ -56,7 +57,7 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
               <TaskCheck
                 checked
                 size="sm"
-                label={`撤销完成 ${task.title}`}
+                label={t("completed.undoShort", { title: task.title })}
                 onToggle={() => onToggle(task)}
               />
               <span className="flex-1 truncate ap-t-sm text-[var(--text-faint)] line-through decoration-[var(--pulse)] decoration-2">
@@ -66,8 +67,8 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
                 type="button"
                 className="ap-icon-btn opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                 style={{ width: 24, height: 24 }}
-                aria-label={`撤销完成 ${task.title}`}
-                title="撤销完成"
+                aria-label={t("completed.undoShort", { title: task.title })}
+                title={t("completed.undoBare")}
                 onClick={() => onToggle(task)}
               >
                 <Undo2 size={13} />

@@ -12,6 +12,9 @@ export type PriorityMode = "auto" | "manual";
 /** 主题偏好：跟随系统 / 强制浅色 / 强制深色。刻意不参与多端同步（见 merge.ts）。 */
 export type ThemePreference = "system" | "light" | "dark";
 
+/** 界面语言（2026-10 UI 方案 3.4）。每台设备各自的偏好，不参与多端同步。 */
+export type Language = "zh" | "en";
+
 /**
  * 每日习惯 / 日常仪式（v2.1 模块一）。
  * 与 Task 分开是因为：Task 带 due 会产生超期压力，而习惯的本质是「每天重来」。
@@ -94,6 +97,8 @@ export interface Settings {
   aiBreakdown: boolean;
   /** 外观主题。设备本地偏好，不跨端同步。 */
   theme: ThemePreference;
+  /** 界面语言。设备本地偏好，不跨端同步。 */
+  language: Language;
 }
 
 export interface Stats {

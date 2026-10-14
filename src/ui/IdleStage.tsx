@@ -4,6 +4,7 @@ import { daysBetween } from "../domain/dates";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { idleQuote } from "../feedback/quotes";
+import { useT } from "../i18n";
 import { PulseLine } from "./PulseLine";
 import { UrgencyBadge } from "./UrgencyBadge";
 
@@ -42,6 +43,7 @@ export function IdleStage({
   onFocusTask,
   onToggle,
 }: Props) {
+  const t = useT();
   // 语录轮换：idleQuote 以时间戳选句，这里定时重渲染让它真正转起来；
   // reduce-motion 下 ap-quote-swap 动画被压平，但换句本身仍是内容更新，保留。
   const [quoteSeed, setQuoteSeed] = useState(0);
@@ -56,10 +58,10 @@ export function IdleStage({
   const circumference = 2 * Math.PI * radius;
 
   const stats: Array<[string, string]> = [
-    ["今日承诺", `${energy.done}/${energy.total}`],
-    ["连续天数", String(streak)],
-    ["当前连击", `x${combo}`],
-    ["累计完成", String(totalCompleted)],
+    [t("stage.stats.commit"), `${energy.done}/${energy.total}`],
+    [t("stage.stats.streak"), String(streak)],
+    [t("stage.stats.combo"), `x${combo}`],
+    [t("stage.stats.total"), String(totalCompleted)],
   ];
 
   return (
@@ -84,7 +86,7 @@ export function IdleStage({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="ap-mono ap-t-2xl leading-none font-semibold">{energy.percent}</span>
-            <span className="ap-label mt-1">今日能量 %</span>
+            <span className="ap-label mt-1">{t("stage.energyPercent")}</span>
           </div>
         </div>
 
@@ -100,23 +102,23 @@ export function IdleStage({
 
       {focus ? (
         <div className="w-full space-y-4 text-center">
-          <span className="ap-label">现在只做这件事</span>
+          <span className="ap-label">{t("stage.nowDoThis")}</span>
           <h2 className="ap-t-xl leading-[1.25] font-semibold tracking-tight">{focus.title}</h2>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <UrgencyBadge score={urgencyScore(focus, today)} />
             {focus.due ? (
               <span className="ap-chip" data-tone={focus.due < today ? "danger" : "today"}>
                 {focus.due < today
-                  ? `已超期 ${-daysBetween(today, focus.due)} 天`
+                  ? t("focus.overdue", { n: -daysBetween(today, focus.due) })
                   : focus.due === today
-                    ? "今天截止"
-                    : `${daysBetween(today, focus.due)} 天后截止`}
+                    ? t("focus.dueToday")
+                    : t("focus.dueIn", { n: daysBetween(today, focus.due) })}
               </span>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
             <button type="button" className="ap-btn ap-btn--cta" data-variant="primary" onClick={onEnterFocus}>
-              <Target size={15} /> 进入聚焦模式
+              <Target size={15} /> {t("stage.enterFocus")}
             </button>
             <button
               type="button"
@@ -130,24 +132,24 @@ export function IdleStage({
                 });
               }}
             >
-              <Check size={15} strokeWidth={3} /> 直接完成
+              <Check size={15} strokeWidth={3} /> {t("stage.doneDirect")}
             </button>
           </div>
         </div>
       ) : (
         <div className="space-y-3 text-center">
           <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-          <h2 className="ap-t-lg font-semibold">清单见底了</h2>
-          <p className="ap-t-sm text-[var(--text-faint)]">在左边写下下一件事，或者好好休息。</p>
+          <h2 className="ap-t-lg font-semibold">{t("stage.emptyTitle")}</h2>
+          <p className="ap-t-sm text-[var(--text-faint)]">{t("stage.emptyBody")}</p>
         </div>
       )}
 
       {upcoming.length > 0 ? (
         <div className="w-full">
           <div className="mb-2 flex items-center justify-between">
-            <span className="ap-label">紧随其后</span>
+            <span className="ap-label">{t("stage.next")}</span>
             <button type="button" className="ap-btn ap-btn--sm" data-variant="ghost" onClick={onEnterFocus}>
-              全部收进聚焦 <ArrowRight size={11} />
+              {t("stage.collectAll")} <ArrowRight size={11} />
             </button>
           </div>
           <ul className="space-y-1.5">
@@ -157,7 +159,7 @@ export function IdleStage({
                 <button
                   type="button"
                   className="group flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--line)] px-3 py-2 text-left transition-colors hover:border-[var(--accent-border)] hover:bg-[var(--accent-inset)]"
-                  aria-label={`聚焦：${task.title}`}
+                  aria-label={t("stage.focusThis", { title: task.title })}
                   onClick={() => onFocusTask(task.id)}
                 >
                   <span className="ap-mono ap-t-xs w-6 shrink-0 text-[var(--text-faint)]">

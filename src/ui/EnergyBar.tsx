@@ -1,4 +1,5 @@
 import { Flame, Zap } from "lucide-react";
+import { useT } from "../i18n";
 
 interface Props {
   done: number;
@@ -12,27 +13,28 @@ interface Props {
 
 /** 今日能量槽 + 连击 + 连续天数（PRD §4 模块4）。整块可点，作为战报的显式入口。 */
 export function EnergyBar({ done, total, percent, combo, streak, onOpenDebrief }: Props) {
+  const t = useT();
   return (
     <button
       type="button"
       className="block w-full cursor-pointer space-y-2 text-left"
-      aria-label="查看今日战报"
-      title="点击查看今日战报"
+      aria-label={t("energy.openDebrief")}
+      title={t("energy.openDebriefTitle")}
       onClick={onOpenDebrief}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="ap-label">今日能量</span>
+        <span className="ap-label">{t("energy.label")}</span>
         <div className="flex items-center gap-1.5">
           {combo >= 2 ? (
-            <span className="ap-combo" data-hot={combo >= 3 ? "true" : undefined} title={`${combo} 连击`}>
+            <span className="ap-combo" data-hot={combo >= 3 ? "true" : undefined} title={t("energy.comboTitle", { n: combo })}>
               <Flame size={12} />
               <span className="ap-mono">x{combo}</span>
             </span>
           ) : null}
           {streak > 0 ? (
-            <span className="ap-chip" data-tone="today" title={`连续 ${streak} 天有完成记录`}>
+            <span className="ap-chip" data-tone="today" title={t("energy.streakTitle", { n: streak })}>
               <Zap size={11} />
-              <span className="ap-mono">{streak}</span> 天
+              <span className="ap-mono">{streak}</span> {t("debrief.streakUnit")}
             </span>
           ) : null}
           <span className="ap-mono ap-t-xs text-[var(--text-dim)]">
@@ -40,7 +42,7 @@ export function EnergyBar({ done, total, percent, combo, streak, onOpenDebrief }
           </span>
         </div>
       </div>
-      <div className="ap-meter" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="今日完成度">
+      <div className="ap-meter" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("energy.done")}>
         <div className="ap-meter__fill" style={{ width: `${percent}%` }} />
       </div>
     </button>

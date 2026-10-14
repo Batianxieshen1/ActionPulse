@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Play, Plus, Target, X } from "lucide-react";
 import { habitsCompletion, isDoneToday, nextUncompletedHabit } from "../domain/habits";
 import type { DailyHabit } from "../domain/types";
+import { useT } from "../i18n";
 
 interface Props {
   habits: DailyHabit[];
@@ -27,6 +28,7 @@ const COLLAPSE_DELAY_MS = 1500;
  * 跨天归零是派生的（按 today 判断），这里不需要任何重置逻辑。
  */
 export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabit, onArchive, onUnarchive }: Props) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
@@ -64,7 +66,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
           setAdding(true);
         }}
       >
-        <Plus size={12} /> 添加日常习惯
+        <Plus size={12} /> {t("habit.add")}
       </button>
     );
   }
@@ -82,14 +84,14 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
         >
           {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
           <span aria-hidden="true">{allDone ? "✅" : "⚡"}</span>
-          日常
+          {t("habit.row")}
           <span className="ap-mono text-[var(--text-faint)]">
             {completion.done}/{completion.total}
           </span>
         </button>
         {allDone ? (
           <span className="ap-label" style={{ color: "var(--pulse)" }}>
-            全部完成
+            {t("habit.allDone")}
           </span>
         ) : null}
         {!open ? (
@@ -100,7 +102,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 className="ap-btn ml-auto min-w-0 max-w-full"
                 data-variant="ghost"
                 style={{ padding: "3px 8px", fontSize: "var(--fs-xs)" }}
-                aria-label={`开始聚焦日常：${nextHabit.title}`}
+                aria-label={t("habit.startFocus", { title: nextHabit.title })}
                 onClick={() => onFocusHabit(nextHabit)}
               >
                 <Play size={11} aria-hidden="true" />
@@ -121,12 +123,12 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
             if (confirmArchiveId === habit.id) {
               return (
                 <span key={habit.id} className="ap-pill" data-done={done}>
-                  归档「{habit.title}」？
+                  {t("habit.archiveAsk", { title: habit.title })}
                   <button
                     type="button"
                     className="ap-icon-btn"
                     style={{ width: 20, height: 20 }}
-                    aria-label={`确认归档 ${habit.title}`}
+                    aria-label={t("habit.archiveConfirm", { title: habit.title })}
                     onClick={() => {
                       onArchive(habit.id);
                       setConfirmArchiveId(null);
@@ -138,7 +140,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                     type="button"
                     className="ap-icon-btn"
                     style={{ width: 20, height: 20 }}
-                    aria-label="取消归档"
+                    aria-label={t("habit.unarchive")}
                     onClick={() => setConfirmArchiveId(null)}
                   >
                     <X size={11} />
@@ -152,7 +154,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                   type="button"
                   className="flex items-center gap-1.5"
                   aria-pressed={done}
-                  aria-label={`${done ? "取消" : "完成"}日常 ${habit.title}`}
+                  aria-label={t(done ? "habit.toggleUndo" : "habit.toggleDone", { title: habit.title })}
                   onClick={() => onToggle(habit)}
                 >
                   <span aria-hidden="true">{habit.emoji}</span>
@@ -163,20 +165,20 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                     type="button"
                     className="ap-icon-btn"
                     style={{ width: 20, height: 20 }}
-                    aria-label={`聚焦日常：${habit.title}`}
-                    title={`聚焦日常：${habit.title}`}
+                    aria-label={t("habit.focusRitual", { title: habit.title })}
+                    title={t("habit.focusRitual", { title: habit.title })}
                     onClick={() => onFocusHabit(habit)}
                   >
                     <Target size={12} />
                   </button>
                 ) : (
-                  <span className="ap-label" aria-label={`今天已完成：${habit.title}`}>已完成</span>
+                  <span className="ap-label" aria-label={t("habit.doneTodayTitle", { title: habit.title })}>{t("habit.doneLabel")}</span>
                 )}
                 <button
                   type="button"
                   className="ap-icon-btn"
                   style={{ width: 18, height: 18, marginRight: -4 }}
-                  aria-label={`归档 ${habit.title}`}
+                  aria-label={t("habit.archiveShort", { title: habit.title })}
                   onClick={() => setConfirmArchiveId(habit.id)}
                 >
                   <X size={10} />
@@ -192,7 +194,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 style={{ padding: "1px 4px", fontSize: "var(--fs-sm)", border: "none", background: "transparent" }}
                 value={emoji}
                 onChange={(event) => setEmoji(event.target.value)}
-                aria-label="习惯图标"
+                aria-label={t("habit.emoji")}
               >
                 {EMOJI_PRESETS.map((preset) => (
                   <option key={preset} value={preset}>
@@ -203,7 +205,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
               <input
                 className="ap-pill-input"
                 autoFocus
-                placeholder="喝水 / 跑步…"
+                placeholder={t("habit.titlePlaceholder")}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
@@ -217,7 +219,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                   }
                 }}
               />
-              <button type="button" className="ap-icon-btn" style={{ width: 20, height: 20 }} aria-label="添加习惯" onClick={submitHabit}>
+              <button type="button" className="ap-icon-btn" style={{ width: 20, height: 20 }} aria-label={t("habit.addConfirm")} onClick={submitHabit}>
                 <Check size={12} />
               </button>
             </span>
@@ -226,9 +228,9 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
               type="button"
               className="ap-pill"
               onClick={() => setAdding(true)}
-              aria-label="添加日常习惯"
+              aria-label={t("habit.add")}
             >
-              <Plus size={11} /> 添加
+              <Plus size={11} /> {t("habit.addShort")}
             </button>
           )}
 
@@ -240,7 +242,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
               style={{ padding: "3px 6px", fontSize: "var(--fs-2xs)" }}
               onClick={() => setShowArchived((value) => !value)}
             >
-              已归档 {archived.length}
+              {t("habit.archived")} {archived.length}
             </button>
           ) : null}
         </div>
@@ -259,7 +261,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 style={{ padding: "1px 5px", fontSize: "var(--fs-2xs)" }}
                 onClick={() => onUnarchive(habit.id)}
               >
-                恢复
+                {t("habit.restore")}
               </button>
             </span>
           ))}

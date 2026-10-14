@@ -1,5 +1,6 @@
 import { ChevronsLeft, Dices, Hand, LayoutGrid, List, Pin, PinOff, Settings, Target, Wand2 } from "lucide-react";
 import type { PriorityMode } from "../domain/types";
+import { useT } from "../i18n";
 import { PulseLine } from "./PulseLine";
 
 export type ViewMode = "list" | "board";
@@ -44,6 +45,7 @@ export function Header({
   canRollDice,
   hasFocus,
 }: Props) {
+  const t = useT();
   const active = (value: boolean) => (value ? "true" : undefined);
 
   return (
@@ -55,14 +57,14 @@ export function Header({
           <h1 className="ap-t-md leading-tight font-semibold tracking-tight">
             ActionPulse
           </h1>
-          <p className="ap-label mt-0.5">脉冲行动 · 替你做决定</p>
+          <p className="ap-label mt-0.5">{t("header.subtitle")}</p>
         </div>
 
         <div className="flex items-center gap-0.5">
           <button
             type="button"
             className="ap-icon-btn"
-            aria-label="同步状态与设置"
+            aria-label={t("header.sync")}
             title={syncTitle}
             onClick={onSyncClick}
           >
@@ -71,8 +73,8 @@ export function Header({
           <button
             type="button"
             className="ap-icon-btn"
-            aria-label="盲盒决策：替我选一个"
-            title="别犹豫，替我选一个（从最紧迫的三件里掷）"
+            aria-label={t("header.dice")}
+            title={t("header.diceTitle")}
             disabled={!canRollDice}
             onClick={onRollDice}
           >
@@ -82,8 +84,8 @@ export function Header({
             type="button"
             className="ap-icon-btn"
             data-active={active(true)}
-            aria-label="进入聚焦模式"
-            title="进入聚焦模式（Alt + F）"
+            aria-label={t("header.focus")}
+            title={t("header.focusTitle")}
             disabled={!hasFocus}
             onClick={onEnterFocus}
           >
@@ -94,8 +96,8 @@ export function Header({
               type="button"
               className="ap-icon-btn"
               data-active={active(pinned)}
-              aria-label={pinned ? "取消常驻，改为抽屉模式" : "锁定常驻左侧"}
-              title={pinned ? "取消常驻（改为抽屉）" : "常驻左侧"}
+              aria-label={pinned ? t("header.unpin") : t("header.pin")}
+              title={pinned ? t("header.unpinTitle") : t("header.pinTitle")}
               onClick={onTogglePin}
             >
               {pinned ? <Pin size={15} /> : <PinOff size={15} />}
@@ -104,8 +106,8 @@ export function Header({
           <button
             type="button"
             className="ap-icon-btn"
-            aria-label="收起面板"
-            title="收起面板（Alt + S）"
+            aria-label={t("header.hide")}
+            title={t("header.hideTitle")}
             onClick={onHide}
           >
             <ChevronsLeft size={16} />
@@ -113,8 +115,8 @@ export function Header({
           <button
             type="button"
             className="ap-icon-btn"
-            aria-label="设置与备份"
-            title="设置 / 导入导出"
+            aria-label={t("header.settings")}
+            title={t("header.settingsTitle")}
             onClick={onOpenSettings}
           >
             <Settings size={16} />
@@ -131,7 +133,7 @@ export function Header({
             data-active={active(view === "list")}
             onClick={() => onViewChange("list")}
           >
-            <List size={12} /> 清单
+            <List size={12} /> {t("header.list")}
           </button>
           <button
             type="button"
@@ -140,7 +142,7 @@ export function Header({
             data-active={active(view === "board")}
             onClick={() => onViewChange("board")}
           >
-            <LayoutGrid size={12} /> 四象限
+            <LayoutGrid size={12} /> {t("header.board")}
           </button>
         </div>
 
@@ -153,20 +155,20 @@ export function Header({
             className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(mode === "auto")}
-            title="系统按紧迫度算法自动排序"
+            title={t("header.autoTitle")}
             onClick={() => onModeChange("auto")}
           >
-            <Wand2 size={12} /> 智能
+            <Wand2 size={12} /> {t("header.auto")}
           </button>
           <button
             type="button"
             className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(mode === "manual")}
-            title="自己拖拽排序与四象限归类"
+            title={t("header.manualTitle")}
             onClick={() => onModeChange("manual")}
           >
-            <Hand size={12} /> 手动
+            <Hand size={12} /> {t("header.manual")}
           </button>
         </div>
       </div>

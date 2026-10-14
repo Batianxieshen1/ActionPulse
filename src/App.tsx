@@ -10,6 +10,7 @@ import { useLlmConfig } from "./hooks/useLlmConfig";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 import { useSwUpdate } from "./hooks/useSwUpdate";
+import { setLanguage, tr, useT, type TKey } from "./i18n";
 import { useTheme } from "./hooks/useTheme";
 import { useSync } from "./hooks/useSync";
 import { activeHabitList, archivedHabitList, completedToday, quadrantBuckets } from "./store/taskStore";
@@ -34,18 +35,14 @@ import { SettingsSheet } from "./ui/SettingsSheet";
 import { TaskList } from "./ui/TaskList";
 import { ToastStack } from "./ui/ToastStack";
 
-const SYNC_TITLE: Record<string, string> = {
-  idle: "未连接同步服务（点击查看设置）",
-  connecting: "正在与本地服务同步…",
-  online: "已连接本地服务，点击立即同步",
-  offline: "同步服务未响应（电脑可能已休眠），本地照常可用。点击查看设置",
-  unauthorized: "token 无效，点击重新配对",
-  error: "同步出错，点击查看设置",
-};
-
 type FocusIntent =
   | { kind: "task"; pinnedTaskId: string | null }
   | { kind: "habit"; habitId: string };
+
+/** 同步状态的悬停说明。sync.* 键与 SyncStatus 的六种取值一一对应。 */
+function syncTitleOf(status: string): string {
+  return tr(`sync.${status}` as TKey);
+}
 
 export default function App() {
   const {
@@ -89,6 +86,12 @@ export default function App() {
   // 主题：只负责运行期切换与系统主题变化；首屏由 index.html 的内联脚本兜住（避免 FOUC）
   useTheme(state.settings.theme);
 
+  // 界面语言：模块级状态，驱动所有 useT 组件与 tr() 调用（语录、hook toast）
+  useEffect(() => {
+    setLanguage(state.settings.language);
+  }, [state.settings.language]);
+  const t = useT();
+
   const isDesktop = useMediaQuery("(min-width: 769px)");
   const pinned = state.settings.panelPinned;
   const manual = state.settings.priorityMode === "manual";
@@ -121,9 +124,9 @@ export default function App() {
         });
         dispatch({ type: "subtask/set", taskId: task.id, titles: outcome.steps });
         if (outcome.source === "ai") {
-          pushToast(`AI 拆解出 ${outcome.steps.length} 步`, "hot");
+          pushToast(tr("toast.aiSteps", { n: outcome.steps.length }), "hot");
         } else if (outcome.error) {
-          pushToast("AI 不可用，已用离线模板拆解", "info");
+          pushToast(tr("toast.aiFallback"), "info");
         }
       } finally {
         setBreakingDownId(null);
@@ -159,7 +162,7 @@ export default function App() {
   const handleTimerFinish = useCallback(() => {
     if (state.settings.soundEnabled) playTimerEnd(state.settings.soundVolume);
     if (state.settings.vibrationEnabled) vibrate("warn");
-    pushToast("番茄钟结束，起来动一下", "hot");
+    pushToast(tr("toast.pomodoroEnd"), "hot");
   }, [state.settings, pushToast]);
 
   const focusHabit = useCallback((habit: DailyHabit) => {
@@ -169,7 +172,7 @@ export default function App() {
 
   const enterFocus = useCallback(() => {
     if (!currentFocus) {
-      pushToast("清单是空的，先加一件事", "info");
+      pushToast(tr("toast.emptyFirst"), "info");
       return;
     }
     setFocusIntent({ kind: "task", pinnedTaskId: null }); // 手动进入聚焦 = 回到系统排的第一名
@@ -183,11 +186,11 @@ export default function App() {
   const rollDice = useCallback(() => {
     const picked = pickBlindBox(ordered, today, Math.random);
     if (!picked) {
-      pushToast("清单是空的，先加一件事", "info");
+      pushToast(tr("toast.emptyFirst"), "info");
       return;
     }
     setFocusIntent({ kind: "task", pinnedTaskId: picked.id });
-    pushToast("别犹豫，就做这一个", "hot");
+    pushToast(tr("toast.dice"), "hot");
   }, [ordered, today, pushToast]);
 
   const recordFocusMinutes = useCallback(
@@ -201,7 +204,7 @@ export default function App() {
       if (state.settings.soundEnabled) playChime(state.settings.soundVolume, 1);
       if (state.settings.vibrationEnabled) vibrate("complete");
       if (state.settings.confettiEnabled && !reduceMotion) void celebrateSmall(origin);
-      pushToast("这就是打勾的反馈——真的任务在下面等你", "hot");
+      pushToast(tr("toast.demoFeedback"), "hot");
     },
     [state.settings, reduceMotion, pushToast],
   );
@@ -252,8 +255,8 @@ export default function App() {
     const previous = lastStatusRef.current;
     lastStatusRef.current = sync.status;
     if (previous === sync.status) return;
-    if (sync.status === "offline" && sync.config) pushToast("同步服务未响应，已切回纯本地模式", "info");
-    if (sync.status === "unauthorized") pushToast("同步 token 无效，请重新配对", "hot");
+    if (sync.status === "offline" && sync.config) pushToast(tr("toast.offline"), "info");
+    if (sync.status === "unauthorized") pushToast(tr("toast.unauthorized"), "hot");
   }, [sync.status, sync.config, pushToast]);
 
   const upcoming = ordered.slice(1, 4);
@@ -264,7 +267,7 @@ export default function App() {
         <Header
           beat={beat}
           syncStatus={sync.config ? sync.status : "idle"}
-          syncTitle={sync.config ? (SYNC_TITLE[sync.status] ?? "同步状态") : "未连接同步服务（点击查看设置）"}
+          syncTitle={sync.config ? syncTitleOf(sync.status) : tr("sync.idle")}
           onSyncClick={() => {
             if (sync.config && sync.status !== "unauthorized") sync.syncNow();
             else setSettingsOpen(true);
@@ -317,15 +320,15 @@ export default function App() {
           {allClear && !clearBannerDismissed ? (
             <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
               <span aria-hidden="true">🏆</span>
-              <span className="min-w-0 flex-1 ap-t-sm">今日全部清空，战报已生成</span>
+              <span className="min-w-0 flex-1 ap-t-sm">{t("app.bannerClear")}</span>
               <button type="button" className="ap-btn" style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }} onClick={() => setDebriefOpen(true)}>
-                查看
+                {t("app.view")}
               </button>
               <button
                 type="button"
                 className="ap-icon-btn"
                 style={{ width: 24, height: 24 }}
-                aria-label="不再提示"
+                aria-label={t("app.dismiss")}
                 onClick={() => setClearBannerDismissed(true)}
               >
                 ×
@@ -337,20 +340,20 @@ export default function App() {
           {pwa.canInstall ? (
             <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
               <span aria-hidden="true">📲</span>
-              <span className="min-w-0 flex-1 ap-t-sm">装成独立应用？无地址栏，离线也能开</span>
+              <span className="min-w-0 flex-1 ap-t-sm">{t("app.bannerInstall")}</span>
               <button
                 type="button"
                 className="ap-btn"
                 style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }}
                 onClick={() => void pwa.promptInstall()}
               >
-                安装
+                {t("app.install")}
               </button>
               <button
                 type="button"
                 className="ap-icon-btn"
                 style={{ width: 24, height: 24 }}
-                aria-label="不再提示"
+                aria-label={t("app.dismiss")}
                 onClick={pwa.dismiss}
               >
                 ×
@@ -362,20 +365,20 @@ export default function App() {
           {swUpdate.updateReady ? (
             <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
               <span aria-hidden="true">✨</span>
-              <span className="min-w-0 flex-1 ap-t-sm">新版已就绪，刷新即可生效</span>
+              <span className="min-w-0 flex-1 ap-t-sm">{t("app.bannerUpdate")}</span>
               <button
                 type="button"
                 className="ap-btn"
                 style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }}
                 onClick={swUpdate.applyUpdate}
               >
-                刷新
+                {t("app.refresh")}
               </button>
               <button
                 type="button"
                 className="ap-icon-btn"
                 style={{ width: 24, height: 24 }}
-                aria-label="暂不刷新"
+                aria-label={t("app.later")}
                 onClick={swUpdate.dismiss}
               >
                 ×
@@ -430,11 +433,9 @@ export default function App() {
           />
 
           <p className="pt-2 text-center ap-t-2xs leading-5 text-[var(--text-faint)]">
-            Alt+S 收起面板 · Alt+F 聚焦 · Alt+N 记一笔
+            {t("app.footerShortcuts")}
             <br />
-            {sync.config
-              ? "已连接本地服务，改动会实时同步到其他设备"
-              : "数据仅存于本机浏览器，记得偶尔导出备份"}
+            {sync.config ? t("app.footerSynced") : t("app.footerLocal")}
           </p>
         </div>
       </aside>

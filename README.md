@@ -257,7 +257,7 @@ They are better than this at being todo apps. ActionPulse is not trying to win t
 <details>
 <summary><b>Is the interface available in English?</b></summary>
 
-Not yet — the UI is Chinese-only for now. The README and engineering docs are bilingual, and the product is deliberately built for personal use first.
+Yes — since v2.3.0 the UI is bilingual (Chinese / English), switchable in settings; the preference is per-device. The natural-language capture markers stay Chinese (`!high 今天 ~15m`), and the engineering docs are bilingual too.
 </details>
 
 <details>

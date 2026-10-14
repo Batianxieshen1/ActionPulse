@@ -113,6 +113,7 @@ export function defaultSettings(): Settings {
     reduceMotion: false,
     aiBreakdown: true,
     theme: "system",
+    language: "zh",
   };
 }
 
@@ -232,6 +233,7 @@ export function sanitizeSettings(raw: unknown): Settings {
     reduceMotion: raw.reduceMotion === true,
     aiBreakdown: raw.aiBreakdown !== false,
     theme: isThemePreference(raw.theme) ? raw.theme : "system",
+    language: raw.language === "en" ? "en" : "zh",
   };
 }
 

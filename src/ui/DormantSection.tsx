@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Snowflake, Trash2 } from "lucide-react";
 import { dormantDays } from "../domain/hibernation";
 import type { Task } from "../domain/types";
+import { useT } from "../i18n";
 
 interface Props {
   tasks: Task[];
@@ -24,6 +25,7 @@ const INITIAL_VISIBLE = 5;
  * 真正能把它从僵尸状态里救出来的只有两件事：**给它定个日子，或者删掉它**。所以三个出口都摆在台面上。
  */
 export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -44,16 +46,16 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
       >
         {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         <Snowflake size={12} />
-        冷却休眠
+        {t("dormant.title")}
         <span className="ap-mono text-[var(--text-faint)]">{tasks.length}</span>
       </button>
 
       {open ? (
         <div className="mt-1.5 space-y-1.5">
           <p className="px-2 ap-t-2xs leading-5 text-[var(--text-faint)]">
-            这些任务超过 14 天没动过、也没有截止日期，先移出主排序，免得看着心累。
+            {t("dormant.hintLongA")}
             <br />
-            唤醒只是把它放回去；想真正留下它，给它定个日子，或者干脆删掉。
+            {t("dormant.hintLongB")}
           </p>
 
           {visible.map((task) => (
@@ -61,8 +63,8 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
               <span className="min-w-0 flex-1 truncate ap-t-sm text-[var(--text-dim)]" title={task.title}>
                 {task.title}
               </span>
-              <span className="ap-chip" title="距上次改动">
-                搁置 {dormantDays(task, now)} 天
+              <span className="ap-chip" title={t("dormant.lastChange")}>
+                {t("dormant.idleDays", { n: dormantDays(task, now) })}
               </span>
 
               <input
@@ -70,8 +72,8 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
                 className="ap-input ap-mono"
                 style={{ width: 124, padding: "2px 6px", fontSize: "var(--fs-xs)" }}
                 value={task.due ?? ""}
-                aria-label={`给「${task.title}」定个截止日`}
-                title="定个日子，它就不再是僵尸任务"
+                aria-label={t("dormant.setDueTitle", { title: task.title })}
+                title={t("dormant.setDue")}
                 onChange={(event) => onSetDue(task.id, event.target.value || null)}
               />
 
@@ -81,7 +83,7 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
                 style={{ padding: "2px 8px", fontSize: "var(--fs-xs)" }}
                 onClick={() => onWake(task.id)}
               >
-                唤醒
+                {t("dormant.wake")}
               </button>
 
               {confirmId === task.id ? (
@@ -95,7 +97,7 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
                       setConfirmId(null);
                     }}
                   >
-                    确认删除
+                    {t("card.deleteConfirm")}
                   </button>
                   <button
                     type="button"
@@ -103,7 +105,7 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
                     style={{ padding: "2px 8px", fontSize: "var(--fs-xs)" }}
                     onClick={() => setConfirmId(null)}
                   >
-                    取消
+                    {t("common.cancel")}
                   </button>
                 </>
               ) : (
@@ -111,7 +113,7 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
                   type="button"
                   className="ap-icon-btn"
                   style={{ width: 26, height: 26 }}
-                  aria-label={`删除 ${task.title}`}
+                  aria-label={t("dormant.removeShort", { title: task.title })}
                   onClick={() => setConfirmId(task.id)}
                 >
                   <Trash2 size={12} />
@@ -127,7 +129,7 @@ export function DormantSection({ tasks, now, onWake, onSetDue, onRemove }: Props
               data-variant="ghost"
               onClick={() => setShowAll(true)}
             >
-              还有 {tasks.length - INITIAL_VISIBLE} 个…
+              {t("dormant.more", { n: tasks.length - INITIAL_VISIBLE })}
             </button>
           ) : null}
         </div>

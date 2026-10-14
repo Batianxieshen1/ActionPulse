@@ -3,6 +3,7 @@ import { CornerDownLeft, Plus } from "lucide-react";
 import { addDays, daysBetween, todayKey } from "../domain/dates";
 import { parseCapture } from "../domain/nlp";
 import type { Importance } from "../domain/types";
+import { tr, useT } from "../i18n";
 
 interface Props {
   onAdd: (title: string, patch?: { importance?: Importance; due?: string | null; estimateMinutes?: number | null }) => void;
@@ -10,15 +11,13 @@ interface Props {
 
 const ESTIMATE_PRESETS = [5, 15, 30, 60];
 
-const IMPORTANCE_LABEL: Record<Importance, string> = { high: "高优", medium: "普通", low: "低优" };
-
 function dueLabel(due: string, today: string): string {
   const diff = daysBetween(today, due);
-  if (diff === 0) return "今天";
-  if (diff === 1) return "明天";
-  if (diff === 2) return "后天";
+  if (diff === 0) return tr("common.today");
+  if (diff === 1) return tr("common.tomorrow");
+  if (diff === 2) return tr("common.dayAfter");
   if (diff < 0) return due;
-  return `${diff} 天后`;
+  return tr("card.dueIn", { n: diff });
 }
 
 /**
@@ -30,6 +29,12 @@ function dueLabel(due: string, today: string): string {
  * 解析结果实时显示成胶囊：看得见才敢用。
  */
 export function QuickAdd({ onAdd }: Props) {
+  const t = useT();
+  const importanceLabel: Record<Importance, string> = {
+    high: t("quick.impHigh"),
+    medium: t("quick.impMed"),
+    low: t("quick.impLow"),
+  };
   const [title, setTitle] = useState("");
   const [importance, setImportance] = useState<Importance>("medium");
   const [due, setDue] = useState<string>("");
@@ -58,7 +63,7 @@ export function QuickAdd({ onAdd }: Props) {
         <input
           className="ap-input"
           style={{ paddingRight: 40 }}
-          placeholder="现在要做什么？回车加入清单"
+          placeholder={t("quick.placeholder")}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           onKeyDown={(event) => {
@@ -67,12 +72,12 @@ export function QuickAdd({ onAdd }: Props) {
               submit();
             }
           }}
-          aria-label="新任务标题"
+          aria-label={t("quick.title")}
         />
         <button
           type="button"
           className="ap-icon-btn absolute top-1/2 right-1 -translate-y-1/2"
-          aria-label="添加任务"
+          aria-label={t("common.addTask")}
           onClick={submit}
         >
           {title.trim().length > 0 ? <CornerDownLeft size={14} /> : <Plus size={14} />}
@@ -81,10 +86,10 @@ export function QuickAdd({ onAdd }: Props) {
 
       {parsedAnything ? (
         <div className="flex flex-wrap items-center gap-1.5" aria-live="polite">
-          <span className="ap-label">识别为</span>
+          <span className="ap-label">{t("quick.parsedAs")}</span>
           {parsed.importance ? (
             <span className="ap-chip" data-tone={parsed.importance === "high" ? "warn" : undefined}>
-              {IMPORTANCE_LABEL[parsed.importance]}
+              {importanceLabel[parsed.importance]}
             </span>
           ) : null}
           {parsed.due ? (
@@ -93,7 +98,7 @@ export function QuickAdd({ onAdd }: Props) {
             </span>
           ) : null}
           {parsed.estimateMinutes !== undefined ? (
-            <span className="ap-chip">{parsed.estimateMinutes} 分钟</span>
+            <span className="ap-chip">{parsed.estimateMinutes} {t("common.minute")}</span>
           ) : null}
         </div>
       ) : null}
@@ -106,53 +111,53 @@ export function QuickAdd({ onAdd }: Props) {
           className="ap-select ap-t-xs"
           style={{ opacity: parsed.importance !== undefined ? 0.45 : undefined }}
           disabled={parsed.importance !== undefined}
-          title={parsed.importance !== undefined ? "已由标题里的标记指定" : undefined}
+          title={parsed.importance !== undefined ? t("quick.takenOver") : undefined}
           value={importance}
           onChange={(event) => setImportance(event.target.value as Importance)}
-          aria-label="重要度"
+          aria-label={t("quick.impLabel")}
         >
-          <option value="high">高优</option>
-          <option value="medium">普通</option>
-          <option value="low">低优</option>
+          <option value="high">{t("quick.impHigh")}</option>
+          <option value="medium">{t("quick.impMed")}</option>
+          <option value="low">{t("quick.impLow")}</option>
         </select>
 
         <select
           className="ap-select ap-t-xs"
           style={{ opacity: parsed.due !== undefined ? 0.45 : undefined }}
           disabled={parsed.due !== undefined}
-          title={parsed.due !== undefined ? "已由标题里的标记指定" : undefined}
+          title={parsed.due !== undefined ? t("quick.takenOver") : undefined}
           value={due}
           onChange={(event) => setDue(event.target.value)}
-          aria-label="截止时间"
+          aria-label={t("quick.dueLabel")}
         >
-          <option value="">无截止</option>
-          <option value={today}>今天</option>
-          <option value={addDays(today, 1)}>明天</option>
-          <option value={addDays(today, 3)}>三天内</option>
-          <option value={addDays(today, 7)}>一周内</option>
+          <option value="">{t("quick.noDue")}</option>
+          <option value={today}>{t("common.today")}</option>
+          <option value={addDays(today, 1)}>{t("common.tomorrow")}</option>
+          <option value={addDays(today, 3)}>{t("quick.due3d")}</option>
+          <option value={addDays(today, 7)}>{t("quick.due1w")}</option>
         </select>
 
         <select
           className="ap-select ap-t-xs"
           style={{ opacity: parsed.estimateMinutes !== undefined ? 0.45 : undefined }}
           disabled={parsed.estimateMinutes !== undefined}
-          title={parsed.estimateMinutes !== undefined ? "已由标题里的标记指定" : undefined}
+          title={parsed.estimateMinutes !== undefined ? t("quick.takenOver") : undefined}
           value={estimate}
           onChange={(event) => setEstimate(event.target.value)}
-          aria-label="预估耗时"
+          aria-label={t("quick.estimateLabel")}
         >
-          <option value="">未估时</option>
+          <option value="">{t("common.untimed")}</option>
           {ESTIMATE_PRESETS.map((minutes) => (
             <option key={minutes} value={minutes}>
-              {minutes} 分钟
+              {minutes} {t("common.minute")}
             </option>
           ))}
-          <option value={120}>2 小时</option>
+          <option value={120}>2 {t("common.hour")}</option>
         </select>
       </div>
 
       <p className="ap-t-2xs leading-5 text-[var(--text-faint)]">
-        也可以直接写：<code className="ap-mono">!high</code> <code className="ap-mono">!med</code>{" "}
+        {t("quick.hint")}<code className="ap-mono">!high</code> <code className="ap-mono">!med</code>{" "}
         <code className="ap-mono">!low</code> · <code className="ap-mono">今天</code>{" "}
         <code className="ap-mono">明天</code> <code className="ap-mono">周三</code> ·{" "}
         <code className="ap-mono">~15m</code> <code className="ap-mono">~1h</code>

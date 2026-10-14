@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Check, Copy, X } from "lucide-react";
 import { debriefMarkdown, type DebriefStats } from "../domain/debrief";
+import { useT } from "../i18n";
 import { copyText } from "./copyText";
 
 interface Props {
@@ -23,6 +24,7 @@ function formatMinutes(minutes: number): string {
  * 所以清空时只出现一条**非阻塞**提示，这个弹层必须由用户主动打开。
  */
 export function DebriefSheet({ stats, onClose }: Props) {
+  const t = useT();
   const markdown = useMemo(() => debriefMarkdown(stats), [stats]);
   const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
 
@@ -33,12 +35,12 @@ export function DebriefSheet({ stats, onClose }: Props) {
   };
 
   const cells: { label: string; value: string; hint?: string }[] = [
-    { label: "今日完成", value: String(stats.tasksDone), hint: "件任务" },
-    { label: "专注时长", value: formatMinutes(stats.focusMinutes), hint: "分钟" },
-    { label: "连击峰值", value: stats.comboPeak > 0 ? `x${stats.comboPeak}` : "—" },
-    { label: "习惯达成", value: stats.habitsTotal > 0 ? `${stats.habitsDone}/${stats.habitsTotal}` : "—" },
-    { label: "连续天数", value: String(stats.streakDays), hint: "天" },
-    { label: "累计完成", value: String(stats.totalCompleted), hint: "件" },
+    { label: t("debrief.tasksDone"), value: String(stats.tasksDone), hint: t("debrief.tasksUnit") },
+    { label: t("debrief.focusMinutes"), value: formatMinutes(stats.focusMinutes), hint: t("debrief.minutesUnit") },
+    { label: t("debrief.comboPeak"), value: stats.comboPeak > 0 ? `x${stats.comboPeak}` : "—" },
+    { label: t("debrief.habits"), value: stats.habitsTotal > 0 ? `${stats.habitsDone}/${stats.habitsTotal}` : "—" },
+    { label: t("debrief.streak"), value: String(stats.streakDays), hint: t("debrief.streakUnit") },
+    { label: t("stage.stats.total"), value: String(stats.totalCompleted), hint: t("debrief.totalUnit") },
   ];
 
   // 近 7 天估时分布的行。条形复用 .ap-breakdown__track/__fill（同一套轨道语言），
@@ -46,10 +48,10 @@ export function DebriefSheet({ stats, onClose }: Props) {
   const mixRows = (() => {
     const mix = stats.weekEstimateMix;
     const rows = [
-      { label: "≤15 分钟", count: mix.quick },
-      { label: "16–60 分钟", count: mix.medium },
-      { label: ">60 分钟", count: mix.slow },
-      { label: "未估时", count: mix.untimed },
+      { label: t("debrief.bucketQuick"), count: mix.quick },
+      { label: t("debrief.bucketMedium"), count: mix.medium },
+      { label: t("debrief.bucketSlow"), count: mix.slow },
+      { label: t("debrief.bucketUntimed"), count: mix.untimed },
     ];
     const max = Math.max(...rows.map((row) => row.count), 1);
     return rows.map((row) => ({ ...row, max }));
@@ -58,15 +60,15 @@ export function DebriefSheet({ stats, onClose }: Props) {
   return (
     <>
       <div className="fixed inset-0 z-40" style={{ background: "var(--scrim)" }} onClick={onClose} aria-hidden="true" />
-      <div className="ap-overlay" role="dialog" aria-modal="true" aria-label="今日战报" style={{ background: "transparent" }}>
+      <div className="ap-overlay" role="dialog" aria-modal="true" aria-label={t("debrief.title")} style={{ background: "transparent" }}>
         <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-10">
           <div className="ap-card w-full max-w-[520px] space-y-5 p-6">
             <header className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="ap-t-lg font-semibold">今日战报</h2>
+                <h2 className="ap-t-lg font-semibold">{t("debrief.title")}</h2>
                 <p className="ap-label mt-1">{stats.today}</p>
               </div>
-              <button type="button" className="ap-icon-btn" aria-label="关闭战报" onClick={onClose}>
+              <button type="button" className="ap-icon-btn" aria-label={t("debrief.close")} onClick={onClose}>
                 <X size={16} />
               </button>
             </header>
@@ -88,12 +90,12 @@ export function DebriefSheet({ stats, onClose }: Props) {
             {/* 合并策略亮出来：数字取的是各设备的最大值。自己发现「数字少了」会伤信任，
                 主动说清楚就把「缺陷」变成「诚实的设计」。 */}
             <p className="px-0.5 ap-t-2xs leading-4 text-[var(--text-faint)]">
-              专注时长在多端之间取较大值合并 —— 宁可少算，不做虚高。
+              {t("debrief.mergeNote")}
             </p>
 
             {stats.weekEstimateMix.total > 0 ? (
               <div>
-                <div className="ap-label mb-1.5">近 7 天完成分布</div>
+                <div className="ap-label mb-1.5">{t("debrief.weekMix")}</div>
                 <div className="space-y-1.5">
                   {mixRows.map(({ label, count, max }) => (
                     <div key={label} className="ap-breakdown__row">
@@ -110,15 +112,15 @@ export function DebriefSheet({ stats, onClose }: Props) {
                 </div>
                 <p className="mt-2 ap-t-2xs leading-4 text-[var(--text-faint)]">
                   {stats.weekEstimateMix.quickPercent >= 60 && stats.weekEstimateMix.total >= 3
-                    ? `速赢占比 ${stats.weekEstimateMix.quickPercent}% —— 算法在喂你小任务，记得也喂点大的。`
-                    : `速赢占比 ${stats.weekEstimateMix.quickPercent}%。`}
+                    ? t("debrief.quickHigh", { n: stats.weekEstimateMix.quickPercent })
+                    : t("debrief.quickLow", { n: stats.weekEstimateMix.quickPercent })}
                 </p>
               </div>
             ) : null}
 
             {stats.taskTitles.length > 0 ? (
               <div>
-                <div className="ap-label mb-1.5">今天完成的事</div>
+                <div className="ap-label mb-1.5">{t("debrief.doneToday")}</div>
                 <ul className="space-y-1">
                   {/* 用下标做 key：同一天完成两个同名任务是完全正常的（"回邮件" ×2），
                       用 title 当 key 会直接撞车。这个列表是静态且不可重排的，下标在这里是正确的。
@@ -134,18 +136,18 @@ export function DebriefSheet({ stats, onClose }: Props) {
             ) : null}
 
             <div>
-              <div className="ap-label mb-1.5">Markdown 战报</div>
+              <div className="ap-label mb-1.5">{t("debrief.markdown")}</div>
               <pre className="ap-scroll max-h-[168px] overflow-auto rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--control-bg)] p-3 ap-t-xs leading-5 whitespace-pre-wrap">
                 {markdown}
               </pre>
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <button type="button" className="ap-btn" data-variant="primary" onClick={() => void handleCopy()}>
                   {copyState === "ok" ? <Check size={13} /> : <Copy size={13} />}
-                  {copyState === "ok" ? "已复制" : "复制 Markdown"}
+                  {copyState === "ok" ? t("debrief.copied") : t("debrief.copy")}
                 </button>
                 {copyState === "fail" ? (
                   <span className="ap-t-xs" style={{ color: "var(--tier-high)" }}>
-                    浏览器不允许自动复制 —— 上面的文本可以直接手动选中
+                    {t("debrief.copyFail")}
                   </span>
                 ) : null}
               </div>
