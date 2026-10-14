@@ -24,6 +24,7 @@ import { HabitBar } from "./ui/HabitBar";
 import { FocusStage } from "./ui/FocusStage";
 import { Header, type ViewMode } from "./ui/Header";
 import { IdleStage } from "./ui/IdleStage";
+import { MiniStage } from "./ui/MiniStage";
 import { QuadrantBoard } from "./ui/QuadrantBoard";
 import { QuickAdd } from "./ui/QuickAdd";
 import { SettingsSheet } from "./ui/SettingsSheet";
@@ -286,6 +287,11 @@ export default function App() {
           />
         </div>
 
+        {/* 窄布局（手机 / 停靠窗）的「现在只做这件事」：桌面宽布局由右侧 IdleStage 承担 */}
+        {!isDesktop && currentFocus ? (
+          <MiniStage focus={currentFocus} today={today} percent={energySnapshot.percent} onEnterFocus={enterFocus} />
+        ) : null}
+
         <div className="ap-scroll flex-1 space-y-3 px-4 pt-3 pb-8">
           <QuickAdd onAdd={addTask} />
 
@@ -375,6 +381,7 @@ export default function App() {
             combo={state.stats.combo}
             totalCompleted={state.stats.totalCompleted}
             onEnterFocus={enterFocus}
+            onFocusTask={(taskId) => setFocusIntent({ kind: "task", pinnedTaskId: taskId })}
             onToggle={toggleTask}
           />
         </main>

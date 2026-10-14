@@ -990,6 +990,7 @@ select {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
@@ -1000,6 +1001,7 @@ select {
 [data-reduce-motion="true"] *::before,
 [data-reduce-motion="true"] *::after {
   animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
@@ -1122,4 +1124,18 @@ select {
 .ap-input--sm {
   padding: 5px 7px;
   font-size: var(--fs-sm);
+}
+
+/* P2：紧凑台面条（窄布局顶部的「现在只做这件事」）。 */
+.ap-mini-stage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* P2：台面语录轮换的淡入。 */
+.ap-quote-swap {
+  animation: ap-fade 900ms ease both;
 }

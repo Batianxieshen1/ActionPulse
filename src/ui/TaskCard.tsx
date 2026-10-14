@@ -108,6 +108,10 @@ export function TaskCard({
       className="ap-card ap-reveal px-3 py-2.5"
       data-rank={rank === 0 && !manual ? 0 : undefined}
       data-dragging={dragging ? "true" : undefined}
+      // stagger 入场：前几张卡依次晚 30ms（封顶 5 张）。
+      // reduce-motion 下动画时长已被压平，但 delay 未清零——由 CSS 的
+      // reduce-motion 块统一把 animation-delay 也归零兜底。
+      style={{ animationDelay: `${Math.min(index, 5) * 30}ms` }}
       onDragOver={(event) => {
         if (!manual) return;
         event.preventDefault();
