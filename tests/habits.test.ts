@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_HABIT_EMOJI,
   activeHabits,
+  completeHabitDate,
   createHabit,
   habitStreak,
   habitsCompletion,
   isDoneToday,
   mergeHabits,
+  nextUncompletedHabit,
   sameHabits,
   toggleHabitDate,
 } from "../src/domain/habits";
@@ -75,6 +77,59 @@ describe("跨天派生（不做过期滚存）", () => {
     h = toggleHabitDate(h, TODAY, T0);
     expect(h.completedDates).toEqual(["2026-10-07", "2026-10-08"]);
     expect(isDoneToday(h, TODAY)).toBe(true);
+  });
+});
+
+describe("聚焦完成日常习惯", () => {
+  it("完成今天会加入日期并严格推进更新时间", () => {
+    const before = habit({ id: "h1", completedDates: ["2026-10-07"] });
+    const after = completeHabitDate(before, TODAY, T0);
+
+    expect(after.completedDates).toEqual(["2026-10-07", TODAY]);
+    expect(after.updatedAt).toBeGreaterThan(before.updatedAt);
+    expect(isDoneToday(after, TODAY)).toBe(true);
+  });
+
+  it("重复完成今天是幂等操作，不改变对象或更新时间", () => {
+    const before = habit({ id: "h1", completedDates: [TODAY], updatedAt: T0 + 10 });
+    const after = completeHabitDate(before, TODAY, T0 + 100);
+
+    expect(after).toBe(before);
+    expect(after.completedDates).toEqual([TODAY]);
+    expect(after.updatedAt).toBe(T0 + 10);
+  });
+});
+
+describe("nextUncompletedHabit", () => {
+  it("returns the first active habit not yet completed today, preserving input order", () => {
+    const habits = [
+      habit({ id: "done", completedDates: [TODAY] }),
+      habit({ id: "archived", archived: true }),
+      habit({ id: "next", title: "跑步" }),
+      habit({ id: "later", title: "阅读" }),
+    ];
+
+    expect(nextUncompletedHabit(habits, TODAY)?.id).toBe("next");
+  });
+
+  it("returns null when all habits are done or archived", () => {
+    expect(
+      nextUncompletedHabit(
+        [habit({ id: "done", completedDates: [TODAY] }), habit({ id: "archived", archived: true })],
+        TODAY,
+      ),
+    ).toBeNull();
+    expect(nextUncompletedHabit([], TODAY)).toBeNull();
+  });
+
+  it("does not mutate the input array or habit objects", () => {
+    const first = habit({ id: "done", completedDates: [TODAY] });
+    const second = habit({ id: "next" });
+    const habits = [first, second];
+    const snapshot = JSON.stringify(habits);
+
+    expect(nextUncompletedHabit(habits, TODAY)).toBe(second);
+    expect(JSON.stringify(habits)).toBe(snapshot);
   });
 });
 
