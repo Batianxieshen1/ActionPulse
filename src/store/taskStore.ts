@@ -8,7 +8,7 @@
  */
 import { nextStamp } from "../domain/clock";
 import { dateKeyOf } from "../domain/dates";
-import { createHabit, toggleHabitDate } from "../domain/habits";
+import { completeHabitDate, createHabit, toggleHabitDate } from "../domain/habits";
 import { isHibernating } from "../domain/hibernation";
 import { createId } from "../domain/id";
 import { mergeStates } from "../domain/merge";
@@ -55,6 +55,7 @@ export type Action =
   | { type: "subtask/set"; taskId: string; titles: string[] }
   | { type: "habit/add"; title: string; emoji?: string; now: number }
   | { type: "habit/toggle"; id: string; now: number }
+  | { type: "habit/complete"; id: string; now: number }
   | { type: "habit/update"; id: string; patch: { title?: string; emoji?: string } }
   | { type: "habit/archive"; id: string }
   | { type: "habit/unarchive"; id: string }
@@ -259,6 +260,19 @@ export function reducer(state: AppState, action: Action): AppState {
         habits: state.habits.map((habit) =>
           habit.id === action.id ? toggleHabitDate(habit, today, action.now) : habit,
         ),
+      };
+    }
+
+    case "habit/complete": {
+      const today = dateKeyOf(action.now);
+      if (!today) return state;
+      const target = state.habits.find((habit) => habit.id === action.id);
+      if (!target) return state;
+      const completed = completeHabitDate(target, today, action.now);
+      if (completed === target) return state;
+      return {
+        ...state,
+        habits: state.habits.map((habit) => (habit.id === action.id ? completed : habit)),
       };
     }
 
