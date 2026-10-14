@@ -2,11 +2,16 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { TaskCard } from "./TaskCard";
+import { TaskCheck } from "./TaskCheck";
 
 interface Props {
   tasks: Task[];
   today: string;
   manual: boolean;
+  /** 新用户空态演示卡：累计完成不足 3 时为 true。 */
+  showDemo: boolean;
+  /** 示例卡打勾的正反馈由上层接线（礼花/音效），本组件不碰 feedback。 */
+  onDemoToggle: (origin: { x: number; y: number }) => void;
   onToggle: (task: Task, origin?: { x: number; y: number }) => void;
   onToggleSubtask: (task: Task, subId: string) => void;
   onSetSubtasks: (task: Task, titles: string[]) => void;
@@ -24,6 +29,8 @@ export function TaskList({
   tasks,
   today,
   manual,
+  showDemo,
+  onDemoToggle,
   onToggle,
   onToggleSubtask,
   onSetSubtasks,
@@ -36,6 +43,7 @@ export function TaskList({
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [lingering, setLingering] = useState<Task[]>([]);
+  const [demoDone, setDemoDone] = useState(false);
   const timers = useRef(new Map<string, number>());
 
   const handleToggle = useCallback(
@@ -62,11 +70,37 @@ export function TaskList({
   }, [tasks, lingering]);
 
   if (tasks.length === 0 && lingering.length === 0) {
-    // 面板空态刻意压成单行弱提示：完整叙事（能量环、语录、指引）在右侧台面，同屏不重复
+    // 面板空态刻意压成单行弱提示：完整叙事（能量环、语录、指引）在右侧台面，同屏不重复。
+    // 新用户多给一张可交互的示例卡——礼花和音效这种东西，演示一次胜过描述十次。
     return (
-      <p className="px-2 py-4 text-center ap-t-xs leading-5 text-[var(--text-faint)]">
-        清单是空的 —— 写下第一件事就行，系统会替你算。
-      </p>
+      <div className="space-y-2.5">
+        {showDemo ? (
+          <div className="ap-card ap-reveal flex items-center gap-2.5 px-3 py-2.5">
+            <TaskCheck
+              checked={demoDone}
+              label={demoDone ? "示例已完成" : "完成：试试打勾"}
+              onToggle={(event) => {
+                if (demoDone) return;
+                const rect = event.currentTarget.getBoundingClientRect();
+                onDemoToggle({
+                  x: (rect.left + rect.width / 2) / window.innerWidth,
+                  y: (rect.top + rect.height / 2) / window.innerHeight,
+                });
+                setDemoDone(true);
+              }}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="ap-t-base font-medium">{demoDone ? "就是这个感觉" : "试试看：点一下圆圈"}</p>
+              <p className="ap-t-2xs mt-0.5 text-[var(--text-faint)]">
+                {demoDone ? "礼花、水晶音、连击——都在真的任务里等你" : "打勾的瞬间会发生什么"}
+              </p>
+            </div>
+          </div>
+        ) : null}
+        <p className="px-2 py-1 text-center ap-t-xs leading-5 text-[var(--text-faint)]">
+          清单是空的 —— 写下第一件事就行，系统会替你算。
+        </p>
+      </div>
     );
   }
 

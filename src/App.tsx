@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { breakdownWithFallback } from "./domain/aiBreakdown";
 import { streakDays } from "./domain/streak";
 import type { AppState, DailyHabit, Quadrant, Settings, Task } from "./domain/types";
-import { playTimerEnd } from "./feedback/chime";
+import { playChime, playTimerEnd } from "./feedback/chime";
+import { celebrateSmall } from "./feedback/confetti";
 import { vibrate } from "./feedback/haptics";
 import { useActionPulse } from "./hooks/useActionPulse";
 import { useLlmConfig } from "./hooks/useLlmConfig";
 import { useMediaQuery } from "./hooks/useMediaQuery";
+import { usePwaInstall } from "./hooks/usePwaInstall";
+import { useSwUpdate } from "./hooks/useSwUpdate";
 import { useTheme } from "./hooks/useTheme";
 import { useSync } from "./hooks/useSync";
 import { activeHabitList, archivedHabitList, completedToday, quadrantBuckets } from "./store/taskStore";
@@ -78,6 +81,10 @@ export default function App() {
   const [breakingDownId, setBreakingDownId] = useState<string | null>(null);
   const [debriefOpen, setDebriefOpen] = useState(false);
   const [clearBannerDismissed, setClearBannerDismissed] = useState(false);
+
+  // PWA：安装时机（Chromium 满足条件才会触发）与 SW 更新感知
+  const pwa = usePwaInstall();
+  const swUpdate = useSwUpdate();
 
   // 主题：只负责运行期切换与系统主题变化；首屏由 index.html 的内联脚本兜住（避免 FOUC）
   useTheme(state.settings.theme);
@@ -186,6 +193,17 @@ export default function App() {
   const recordFocusMinutes = useCallback(
     (minutes: number) => dispatch({ type: "metrics/recordFocus", minutes, now: Date.now() }),
     [dispatch],
+  );
+
+  /** 空态示例卡的正反馈：复用真实打勾的完整反馈链，但不写入任何数据。 */
+  const demoCelebrate = useCallback(
+    (origin: { x: number; y: number }) => {
+      if (state.settings.soundEnabled) playChime(state.settings.soundVolume, 1);
+      if (state.settings.vibrationEnabled) vibrate("complete");
+      if (state.settings.confettiEnabled && !reduceMotion) void celebrateSmall(origin);
+      pushToast("这就是打勾的反馈——真的任务在下面等你", "hot");
+    },
+    [state.settings, reduceMotion, pushToast],
   );
 
   const focusedHabit =
@@ -315,6 +333,56 @@ export default function App() {
             </div>
           ) : null}
 
+          {/* PWA 安装提示：只有浏览器主动给出安装时机才显示，绝不硬推 */}
+          {pwa.canInstall ? (
+            <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
+              <span aria-hidden="true">📲</span>
+              <span className="min-w-0 flex-1 ap-t-sm">装成独立应用？无地址栏，离线也能开</span>
+              <button
+                type="button"
+                className="ap-btn"
+                style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }}
+                onClick={() => void pwa.promptInstall()}
+              >
+                安装
+              </button>
+              <button
+                type="button"
+                className="ap-icon-btn"
+                style={{ width: 24, height: 24 }}
+                aria-label="不再提示"
+                onClick={pwa.dismiss}
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+
+          {/* 新版就绪：页面在前台时让用户自己刷新，不打断输入 */}
+          {swUpdate.updateReady ? (
+            <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
+              <span aria-hidden="true">✨</span>
+              <span className="min-w-0 flex-1 ap-t-sm">新版已就绪，刷新即可生效</span>
+              <button
+                type="button"
+                className="ap-btn"
+                style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }}
+                onClick={swUpdate.applyUpdate}
+              >
+                刷新
+              </button>
+              <button
+                type="button"
+                className="ap-icon-btn"
+                style={{ width: 24, height: 24 }}
+                aria-label="暂不刷新"
+                onClick={swUpdate.dismiss}
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+
           {view === "board" || manual ? (
             <QuadrantBoard
               buckets={buckets}
@@ -333,6 +401,8 @@ export default function App() {
               tasks={ordered}
               today={today}
               manual={false}
+              showDemo={state.stats.totalCompleted < 3}
+              onDemoToggle={demoCelebrate}
               onToggle={toggleTask}
               onToggleSubtask={toggleSubtask}
               onSetSubtasks={setSubtasks}

@@ -79,3 +79,9 @@ self.addEventListener("fetch", (event) => {
     ),
   );
 });
+
+/* 页面请求立即接管（配合前端 useSwUpdate：前台横幅手动刷新、后台自动刷新）。
+   install 时的 skipWaiting 保留不动，这里只是把同一能力暴露给消息通道。 */
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});
