@@ -1,28 +1,42 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Moon, Shuffle, Sparkles, X, Zap } from "lucide-react";
 import { daysBetween } from "../domain/dates";
-import type { Task } from "../domain/types";
+import { isDoneToday } from "../domain/habits";
+import type { DailyHabit, Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { usePomodoro } from "../hooks/usePomodoro";
 import { PomodoroRing } from "./PomodoroTimer";
 import { TaskCheck } from "./TaskCheck";
 import { UrgencyBadge } from "./UrgencyBadge";
 
-interface Props {
-  tasks: Task[];
+interface SharedProps {
   today: string;
   pomodoroMinutes: number;
+  onExit: () => void;
+  onTimerFinish: () => void;
+  /** 结算专注时长，交给上层累计（按日聚合，多端取最大值）。 */
+  onFocusMinutes: (minutes: number) => void;
+}
+
+interface TaskProps extends SharedProps {
+  kind: "task";
+  tasks: Task[];
   /** 盲盒掷中的任务：优先展示它，而不是永远展示第一名。 */
   pinnedId?: string | null;
   onToggle: (task: Task, origin?: { x: number; y: number }) => void;
   onToggleSubtask: (task: Task, subId: string) => void;
   onBreakdown: (task: Task) => void;
   breakingDown: boolean;
-  onExit: () => void;
-  onTimerFinish: () => void;
-  /** 结算专注时长，交给上层累计（按日聚合，多端取最大值）。 */
-  onFocusMinutes: (minutes: number) => void;
 }
+
+interface HabitProps extends SharedProps {
+  kind: "habit";
+  habit: DailyHabit | null;
+  todayDone: boolean;
+  onCompleteHabit: (id: string) => void;
+}
+
+type Props = TaskProps | HabitProps;
 
 /** ⚡2 分钟破冰的时长（PRD-v2.1 模块二）。 */
 const KICKSTART_MINUTES = 2;
@@ -33,23 +47,21 @@ const KICKSTART_MINUTES = 2;
  * 计时器由本组件持有（而不是 PomodoroRing 内部），因为「2 分钟结束后一键续杯成 25 分钟」
  * 需要直接调用 \`start(25)\` 临时指定时长，不能让时长走一轮 props 再等渲染。
  */
-export function FocusStage({
-  tasks,
-  today,
-  pomodoroMinutes,
-  pinnedId = null,
-  onToggle,
-  onToggleSubtask,
-  onBreakdown,
-  breakingDown,
-  onExit,
-  onTimerFinish,
-  onFocusMinutes,
-}: Props) {
+export function FocusStage(props: Props) {
+  const { today, pomodoroMinutes, onExit, onTimerFinish, onFocusMinutes } = props;
+  const taskProps = props.kind === "task" ? props : null;
+  const habitProps = props.kind === "habit" ? props : null;
+  const tasks = taskProps?.tasks ?? [];
+  const pinnedId = taskProps?.pinnedId ?? null;
+  const onToggle = taskProps?.onToggle;
+  const onToggleSubtask = taskProps?.onToggleSubtask;
+  const onBreakdown = taskProps?.onBreakdown;
+  const breakingDown = taskProps?.breakingDown ?? false;
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [swapNote, setSwapNote] = useState(false);
   const [kickstart, setKickstart] = useState(false);
   const [refillReady, setRefillReady] = useState(false);
+  const [habitCompletedDay, setHabitCompletedDay] = useState<string | null>(null);
 
   const minutes = kickstart ? KICKSTART_MINUTES : pomodoroMinutes;
 
@@ -73,6 +85,12 @@ export function FocusStage({
 
   const timer = usePomodoro(minutes, handleFinish);
   runRef.current = { totalMs: timer.totalMs, kickstart };
+  const isHabitDone = Boolean(
+    habitProps &&
+      (habitProps.todayDone ||
+        (habitProps.habit && isDoneToday(habitProps.habit, today)) ||
+        habitCompletedDay === today),
+  );
 
   useEffect(() => {
     if (timer.status === "running") {
@@ -121,6 +139,17 @@ export function FocusStage({
     timer.start(pomodoroMinutes);
   }, [timer, pomodoroMinutes]);
 
+  const completeCurrentHabit = useCallback(() => {
+    if (!habitProps?.habit || habitProps.todayDone || isDoneToday(habitProps.habit, today) || habitCompletedDay === today) return;
+    if (timer.status === "running") {
+      elapsedRef.current = Math.max(elapsedRef.current, timer.elapsedMs);
+      timer.pause();
+    }
+    setHabitCompletedDay(today);
+    setRefillReady(false);
+    habitProps.onCompleteHabit(habitProps.habit.id);
+  }, [habitProps, today, habitCompletedDay, timer]);
+
   const dueText = (() => {
     if (!current?.due) return null;
     const diff = daysBetween(today, current.due);
@@ -143,7 +172,97 @@ export function FocusStage({
       </header>
 
       <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 pb-10 sm:px-8">
-        {current ? (
+        {habitProps ? (
+          habitProps.habit ? (
+            <div className="w-full max-w-[560px] space-y-7 text-center">
+              <div className="space-y-3">
+                <span className="ap-chip">日常习惯</span>
+                <div aria-hidden="true" className="text-4xl">{habitProps.habit.emoji}</div>
+                <h1 className="text-[26px] leading-[1.3] font-semibold tracking-tight sm:text-[34px]">
+                  {habitProps.habit.title}
+                </h1>
+                <p className="ap-label">把今天的日常，变成现在的一小步。</p>
+              </div>
+
+              {isHabitDone ? (
+                <div className="space-y-4" role="status" aria-live="polite">
+                  <p className="text-[15px] text-[var(--pulse)]">今天已完成，做得好。</p>
+                  <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
+                    回到清单
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="ap-btn mx-auto"
+                  data-variant="primary"
+                  style={{ padding: "11px 20px", fontSize: 14 }}
+                  onClick={completeCurrentHabit}
+                >
+                  <Check size={16} strokeWidth={3} /> 完成今日习惯
+                </button>
+              )}
+
+              <div className="flex flex-col items-center gap-3 pt-1">
+                <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
+                  <button
+                    type="button"
+                    className="ap-btn"
+                    data-variant="ghost"
+                    data-active={kickstart ? undefined : "true"}
+                    disabled={isHabitDone}
+                    style={{ padding: "4px 10px", fontSize: 11.5 }}
+                    onClick={() => switchMode(false)}
+                  >
+                    {pomodoroMinutes} 分钟
+                  </button>
+                  <button
+                    type="button"
+                    className="ap-btn"
+                    data-variant="ghost"
+                    data-active={kickstart ? "true" : undefined}
+                    disabled={isHabitDone}
+                    style={{ padding: "4px 10px", fontSize: 11.5 }}
+                    onClick={() => switchMode(true)}
+                  >
+                    <Zap size={12} /> 2 分钟启动
+                  </button>
+                </div>
+
+                {kickstart && timer.status === "idle" && !isHabitDone ? (
+                  <p className="max-w-[38ch] text-center text-[12px] leading-6 text-[var(--text-faint)]">
+                    只要做两分钟，就能战胜拖延 —— 两分钟后你可以停，也可以接着做。
+                  </p>
+                ) : null}
+
+                <PomodoroRing
+                  timer={timer}
+                  label={`${minutes} 分钟`}
+                  size={132}
+                  disabled={isHabitDone}
+                />
+
+                {refillReady && !isHabitDone ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-[12.5px] text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
+                    <button type="button" className="ap-btn" data-variant="primary" onClick={refill}>
+                      <Zap size={13} /> 续杯 {pomodoroMinutes} 分钟
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-[380px] space-y-4 text-center">
+              <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
+              <p className="text-[15px]">这个日常习惯暂时不可用</p>
+              <p className="text-[12.5px] text-[var(--text-faint)]">它可能已被归档或移除。</p>
+              <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
+                回到清单
+              </button>
+            </div>
+          )
+        ) : current ? (
           <div className="w-full max-w-[560px] space-y-7">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -175,7 +294,7 @@ export function FocusStage({
                     <TaskCheck
                       checked={sub.done}
                       label={sub.done ? `取消完成 ${sub.title}` : `完成 ${sub.title}`}
-                      onToggle={() => onToggleSubtask(current, sub.id)}
+                      onToggle={() => onToggleSubtask?.(current, sub.id)}
                     />
                     <span
                       className="text-[14px]"
@@ -195,7 +314,7 @@ export function FocusStage({
                   type="button"
                   className="ap-btn"
                   disabled={breakingDown}
-                  onClick={() => onBreakdown(current)}
+                  onClick={() => onBreakdown?.(current)}
                 >
                   {breakingDown ? <Loader2 size={13} className="ap-spin" /> : <Sparkles size={13} />}
                   {breakingDown ? "正在拆解…" : "自动拆解"}
@@ -211,7 +330,7 @@ export function FocusStage({
                 style={{ padding: "11px 20px", fontSize: 14 }}
                 onClick={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect();
-                  onToggle(current, {
+                  onToggle?.(current, {
                     x: (rect.left + rect.width / 2) / window.innerWidth,
                     y: (rect.top + rect.height / 2) / window.innerHeight,
                   });

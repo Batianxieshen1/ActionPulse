@@ -255,6 +255,40 @@ describe("每日习惯（v2.1 模块一）", () => {
     expect(state.habits[0].updatedAt).toBeGreaterThan(before);
   });
 
+  it("habit/complete 幂等地完成今天且不修改任务统计或任务列表", () => {
+    let state = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
+    state.stats = { combo: 4, bestCombo: 7, lastCompletionAt: NOW - 1000, totalCompleted: 12, completionDates: [day(NOW)] };
+    state.daily = { focusMinutes: { [day(NOW)]: 35 }, comboPeak: { [day(NOW)]: 4 } };
+    const id = state.habits[0].id;
+    const tasksBefore = state.tasks;
+    const statsBefore = state.stats;
+    const dailyBefore = state.daily;
+
+    const completed = reducer(state, { type: "habit/complete", id, now: NOW });
+    const repeated = reducer(completed, { type: "habit/complete", id, now: NOW + 1000 });
+
+    expect(completed.habits[0].completedDates).toEqual([day(NOW)]);
+    expect(repeated.habits[0].completedDates).toEqual([day(NOW)]);
+    expect(repeated).toBe(completed);
+    expect(completed.tasks).toBe(tasksBefore);
+    expect(completed.stats).toBe(statsBefore);
+    expect(completed.daily).toBe(dailyBefore);
+  });
+
+  it("habit/complete 对未知习惯与无效日期返回原状态", () => {
+    const prev = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
+    expect(reducer(prev, { type: "habit/complete", id: "missing", now: NOW })).toBe(prev);
+    expect(reducer(prev, { type: "habit/complete", id: prev.habits[0].id, now: Number.NaN })).toBe(prev);
+  });
+
+  it("habit/complete 不会完成已归档习惯", () => {
+    let prev = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
+    const id = prev.habits[0].id;
+    prev = reducer(prev, { type: "habit/archive", id });
+
+    expect(reducer(prev, { type: "habit/complete", id, now: NOW })).toBe(prev);
+  });
+
   it("归档只是隐藏，不删除数据", () => {
     let state = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
     const id = state.habits[0].id;

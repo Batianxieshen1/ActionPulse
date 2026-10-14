@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { breakdownWithFallback } from "./domain/aiBreakdown";
 import { streakDays } from "./domain/streak";
-import type { AppState, Quadrant, Settings, Task } from "./domain/types";
+import type { AppState, DailyHabit, Quadrant, Settings, Task } from "./domain/types";
 import { playTimerEnd } from "./feedback/chime";
 import { vibrate } from "./feedback/haptics";
 import { useActionPulse } from "./hooks/useActionPulse";
@@ -11,6 +11,7 @@ import { useTheme } from "./hooks/useTheme";
 import { useSync } from "./hooks/useSync";
 import { activeHabitList, archivedHabitList, completedToday, quadrantBuckets } from "./store/taskStore";
 import { pickBlindBox } from "./domain/pick";
+import { isDoneToday } from "./domain/habits";
 import { requestAiSteps } from "./sync/ai";
 import type { SyncConfig } from "./sync/session";
 import { buildDebrief } from "./domain/debrief";
@@ -38,6 +39,10 @@ const SYNC_TITLE: Record<string, string> = {
   error: "同步出错，点击查看设置",
 };
 
+type FocusIntent =
+  | { kind: "task"; pinnedTaskId: string | null }
+  | { kind: "habit"; habitId: string };
+
 export default function App() {
   const {
     state,
@@ -50,6 +55,7 @@ export default function App() {
     toggleTask,
     addHabit,
     toggleHabit,
+    completeHabit,
     archiveHabit,
     unarchiveHabit,
     toggleSubtask,
@@ -67,10 +73,8 @@ export default function App() {
   const [view, setView] = useState<ViewMode>("list");
   const [panelOpen, setPanelOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [focusOpen, setFocusOpen] = useState(false);
+  const [focusIntent, setFocusIntent] = useState<FocusIntent | null>(null);
   const [breakingDownId, setBreakingDownId] = useState<string | null>(null);
-  /** 🎲 盲盒掷中的任务：让聚焦模式展示它，而不是永远展示第一名。 */
-  const [pinnedFocusId, setPinnedFocusId] = useState<string | null>(null);
   const [debriefOpen, setDebriefOpen] = useState(false);
   const [clearBannerDismissed, setClearBannerDismissed] = useState(false);
 
@@ -150,18 +154,21 @@ export default function App() {
     pushToast("番茄钟结束，起来动一下", "hot");
   }, [state.settings, pushToast]);
 
+  const focusHabit = useCallback((habit: DailyHabit) => {
+    if (habit.archived || isDoneToday(habit, today)) return;
+    setFocusIntent({ kind: "habit", habitId: habit.id });
+  }, [today]);
+
   const enterFocus = useCallback(() => {
     if (!currentFocus) {
       pushToast("清单是空的，先加一件事", "info");
       return;
     }
-    setPinnedFocusId(null); // 手动进入聚焦 = 回到系统排的第一名
-    setFocusOpen(true);
+    setFocusIntent({ kind: "task", pinnedTaskId: null }); // 手动进入聚焦 = 回到系统排的第一名
   }, [currentFocus, pushToast]);
 
   const exitFocus = useCallback(() => {
-    setFocusOpen(false);
-    setPinnedFocusId(null);
+    setFocusIntent(null);
   }, []);
 
   /** 🎲 盲盒决策：按紧迫度加权从 Top 3 里掷一个，直接推进聚焦。 */
@@ -171,8 +178,7 @@ export default function App() {
       pushToast("清单是空的，先加一件事", "info");
       return;
     }
-    setPinnedFocusId(picked.id);
-    setFocusOpen(true);
+    setFocusIntent({ kind: "task", pinnedTaskId: picked.id });
     pushToast("别犹豫，就做这一个", "hot");
   }, [ordered, today, pushToast]);
 
@@ -181,13 +187,18 @@ export default function App() {
     [dispatch],
   );
 
+  const focusedHabit =
+    focusIntent?.kind === "habit"
+      ? state.habits.find((habit) => habit.id === focusIntent.habitId && !habit.archived) ?? null
+      : null;
+
   /* ------------------------------- 快捷键 -------------------------------- */
   // 规范里提到 Space，但它会和输入框冲突，因此只保留 Alt 组合键。
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSettingsOpen(false);
-        setFocusOpen(false);
+        setFocusIntent(null);
         setDebriefOpen(false);
         return;
       }
@@ -198,7 +209,8 @@ export default function App() {
         setPanelOpen((value) => !value);
       } else if (key === "f") {
         event.preventDefault();
-        setFocusOpen((value) => !value);
+        if (focusIntent) exitFocus();
+        else enterFocus();
       } else if (key === "n") {
         event.preventDefault();
         setPanelOpen(true);
@@ -208,7 +220,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [focusIntent, exitFocus, enterFocus]);
 
   // 切到抽屉模式时确保面板可见，否则用户会以为应用坏了
   useEffect(() => {
@@ -268,6 +280,7 @@ export default function App() {
             today={today}
             onAdd={addHabit}
             onToggle={toggleHabit}
+            onFocusHabit={focusHabit}
             onArchive={archiveHabit}
             onUnarchive={unarchiveHabit}
           />
@@ -369,16 +382,32 @@ export default function App() {
 
       <EdgeTab hidden={!isDesktop || panelOpen} pendingCount={ordered.length} onOpen={() => setPanelOpen(true)} />
 
-      {focusOpen ? (
+      {focusIntent?.kind === "task" ? (
         <FocusStage
+          kind="task"
           tasks={ordered}
           today={today}
           pomodoroMinutes={state.settings.pomodoroMinutes}
-          pinnedId={pinnedFocusId}
+          pinnedId={focusIntent.pinnedTaskId}
           onToggle={toggleTask}
           onToggleSubtask={toggleSubtask}
           onBreakdown={handleBreakdown}
           breakingDown={breakingDownId !== null}
+          onExit={exitFocus}
+          onTimerFinish={handleTimerFinish}
+          onFocusMinutes={recordFocusMinutes}
+        />
+      ) : focusIntent?.kind === "habit" ? (
+        <FocusStage
+          kind="habit"
+          habit={focusedHabit}
+          todayDone={focusedHabit ? isDoneToday(focusedHabit, today) : false}
+          today={today}
+          pomodoroMinutes={state.settings.pomodoroMinutes}
+          onCompleteHabit={(id) => {
+            const habit = state.habits.find((item) => item.id === id);
+            if (habit) completeHabit(habit);
+          }}
           onExit={exitFocus}
           onTimerFinish={handleTimerFinish}
           onFocusMinutes={recordFocusMinutes}

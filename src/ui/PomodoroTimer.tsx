@@ -6,6 +6,7 @@ interface Props {
   timer: PomodoroApi;
   label: string;
   size?: number;
+  disabled?: boolean;
 }
 
 function format(ms: number): string {
@@ -16,7 +17,7 @@ function format(ms: number): string {
 }
 
 /** 纯展示的番茄钟环（PRD §4 模块2）。 */
-export function PomodoroRing({ timer, label, size = 148 }: Props) {
+export function PomodoroRing({ timer, label, size = 148, disabled = false }: Props) {
   const radius = size / 2 - 7;
   const circumference = 2 * Math.PI * radius;
   const dash = circumference * timer.progress;
@@ -51,22 +52,24 @@ export function PomodoroRing({ timer, label, size = 148 }: Props) {
 
       <div className="flex items-center gap-1.5">
         {/* 计时控制在台面上是配角，主行动永远是「完成了」——不能两个绿色主按钮同屏 */}
-        {timer.status === "running" ? (
-          <button type="button" className="ap-btn" onClick={timer.pause}>
+        {!disabled && timer.status === "running" ? (
+          <button type="button" className="ap-btn" disabled={disabled} onClick={timer.pause}>
             <Pause size={13} /> 暂停
           </button>
-        ) : timer.status === "paused" ? (
-          <button type="button" className="ap-btn" onClick={() => timer.resume()}>
+        ) : !disabled && timer.status === "paused" ? (
+          <button type="button" className="ap-btn" disabled={disabled} onClick={() => timer.resume()}>
             <Play size={13} /> 继续
           </button>
-        ) : (
-          <button type="button" className="ap-btn" onClick={() => timer.start()}>
+        ) : !disabled ? (
+          <button type="button" className="ap-btn" disabled={disabled} onClick={() => timer.start()}>
             <Play size={13} /> 开始
           </button>
+        ) : null}
+        {disabled ? null : (
+          <button type="button" className="ap-icon-btn" aria-label="重置计时器" onClick={timer.reset}>
+            <RotateCcw size={14} />
+          </button>
         )}
-        <button type="button" className="ap-icon-btn" aria-label="重置计时器" onClick={timer.reset}>
-          <RotateCcw size={14} />
-        </button>
       </div>
     </div>
   );

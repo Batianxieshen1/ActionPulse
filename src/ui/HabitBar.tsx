@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
-import { habitsCompletion, isDoneToday } from "../domain/habits";
+import { Check, ChevronDown, ChevronRight, Play, Plus, Target, X } from "lucide-react";
+import { habitsCompletion, isDoneToday, nextUncompletedHabit } from "../domain/habits";
 import type { DailyHabit } from "../domain/types";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
   today: string;
   onAdd: (title: string, emoji?: string) => void;
   onToggle: (habit: DailyHabit) => void;
+  onFocusHabit: (habit: DailyHabit) => void;
   onArchive: (id: string) => void;
   onUnarchive: (id: string) => void;
 }
@@ -25,7 +26,7 @@ const COLLAPSE_DELAY_MS = 1500;
  * 视图切换、能量槽、快速输入，手机上一行都不能多占。
  * 跨天归零是派生的（按 today 判断），这里不需要任何重置逻辑。
  */
-export function HabitBar({ habits, archived, today, onAdd, onToggle, onArchive, onUnarchive }: Props) {
+export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabit, onArchive, onUnarchive }: Props) {
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
@@ -35,6 +36,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onArchive, 
 
   const completion = habitsCompletion(habits, today);
   const allDone = completion.total > 0 && completion.done === completion.total;
+  const nextHabit = nextUncompletedHabit(habits, today);
 
   useEffect(() => {
     if (!allDone || !open) return;
@@ -69,7 +71,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onArchive, 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           className="ap-btn"
@@ -91,9 +93,24 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onArchive, 
           </span>
         ) : null}
         {!open ? (
-          <span className="ap-meter ml-auto" style={{ width: 56 }} aria-hidden="true">
-            <span className="ap-meter__fill" style={{ width: `${completion.percent}%` }} />
-          </span>
+          <>
+            {nextHabit ? (
+              <button
+                type="button"
+                className="ap-btn ml-auto min-w-0 max-w-full"
+                data-variant="ghost"
+                style={{ padding: "3px 8px", fontSize: 11.5 }}
+                aria-label={`开始聚焦日常：${nextHabit.title}`}
+                onClick={() => onFocusHabit(nextHabit)}
+              >
+                <Play size={11} aria-hidden="true" />
+                <span className="truncate">{nextHabit.emoji} {nextHabit.title}</span>
+              </button>
+            ) : null}
+            <span className="ap-meter" style={{ width: 56 }} aria-hidden="true">
+              <span className="ap-meter__fill" style={{ width: `${completion.percent}%` }} />
+            </span>
+          </>
         ) : null}
       </div>
 
@@ -141,6 +158,20 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onArchive, 
                   <span aria-hidden="true">{habit.emoji}</span>
                   {habit.title}
                 </button>
+                {!done ? (
+                  <button
+                    type="button"
+                    className="ap-icon-btn"
+                    style={{ width: 20, height: 20 }}
+                    aria-label={`聚焦日常：${habit.title}`}
+                    title={`聚焦日常：${habit.title}`}
+                    onClick={() => onFocusHabit(habit)}
+                  >
+                    <Target size={12} />
+                  </button>
+                ) : (
+                  <span className="ap-label" aria-label={`今天已完成：${habit.title}`}>已完成</span>
+                )}
                 <button
                   type="button"
                   className="ap-icon-btn"

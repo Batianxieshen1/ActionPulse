@@ -53,6 +53,21 @@ export function toggleHabitDate(habit: DailyHabit, today: string, now: number): 
   return { ...habit, completedDates, updatedAt: Math.max(now, habit.updatedAt + 1) };
 }
 
+/** 完成今天的习惯；重复调用保持原状态，不会意外撤销打卡。 */
+export function completeHabitDate(habit: DailyHabit, today: string, now: number): DailyHabit {
+  if (isDoneToday(habit, today)) return habit;
+  return {
+    ...habit,
+    completedDates: [...habit.completedDates, today].sort(),
+    updatedAt: Math.max(now, habit.updatedAt + 1),
+  };
+}
+
+/** 按当前习惯顺序选择第一个今天尚未完成的活动习惯。 */
+export function nextUncompletedHabit(habits: readonly DailyHabit[], today: string): DailyHabit | null {
+  return habits.find((habit) => !habit.archived && !isDoneToday(habit, today)) ?? null;
+}
+
 /** 完成日期取并集；标量字段按 updatedAt 取新。 */
 function mergeHabit(a: DailyHabit, b: DailyHabit): DailyHabit {
   const completedDates = [...new Set([...a.completedDates, ...b.completedDates])].sort();
