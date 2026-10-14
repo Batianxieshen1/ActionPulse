@@ -46,8 +46,8 @@ function Toggle({
   return (
     <label className={`flex items-start justify-between gap-3 py-2 ${disabled ? "opacity-50" : "cursor-pointer"}`}>
       <span className="min-w-0">
-        <span className="block text-[13px]">{label}</span>
-        {hint ? <span className="mt-0.5 block text-[11px] leading-5 text-[var(--text-faint)]">{hint}</span> : null}
+        <span className="block ap-t-base">{label}</span>
+        {hint ? <span className="mt-0.5 block ap-t-xs leading-5 text-[var(--text-faint)]">{hint}</span> : null}
       </span>
       <input
         type="checkbox"
@@ -122,7 +122,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
       <aside className="ap-sheet" role="dialog" aria-modal="true" aria-label="设置与备份">
         <header className="flex shrink-0 items-center justify-between border-b border-[var(--line)] px-5 py-4">
           <div>
-            <h2 className="text-[14px] font-semibold">设置与备份</h2>
+            <h2 className="ap-t-md font-semibold">设置与备份</h2>
             <p className="ap-label mt-0.5">数据默认只在这台设备；连接同步后可多端共享</p>
           </div>
           <button type="button" className="ap-icon-btn" aria-label="关闭设置" onClick={onClose}>
@@ -142,14 +142,14 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                   className="ap-btn flex-1"
                   data-variant="ghost"
                   data-active={state.settings.theme === option.value ? "true" : undefined}
-                  style={{ padding: "6px 8px", fontSize: 12 }}
+                  style={{ padding: "6px 8px", fontSize: "var(--fs-sm)" }}
                   onClick={() => onPatch({ theme: option.value })}
                 >
                   {option.label}
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-[11px] leading-5 text-[var(--text-faint)]">
+            <p className="mt-2 ap-t-xs leading-5 text-[var(--text-faint)]">
               「跟随系统」会随操作系统的深浅色自动切换。这个偏好只存在这台设备上，不会同步给手机 ——
               手机可以白天用浅色、电脑同时保持深色。
             </p>
@@ -161,14 +161,14 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
             {sync.config ? (
               <div className="space-y-2.5">
                 <div className="ap-card flex items-center justify-between gap-3 px-3 py-2.5">
-                  <span className="flex items-center gap-2 text-[12.5px]">
+                  <span className="flex items-center gap-2 ap-t-sm">
                     <span className="ap-sync-dot" data-status={sync.status} />
                     {SYNC_LABEL[sync.status] ?? sync.status}
                   </span>
-                  <span className="ap-mono text-[11px] text-[var(--text-faint)]">rev {sync.rev}</span>
+                  <span className="ap-mono ap-t-xs text-[var(--text-faint)]">rev {sync.rev}</span>
                 </div>
                 {sync.lastError ? (
-                  <p className="text-[11.5px]" style={{ color: "var(--tier-critical)" }}>
+                  <p className="ap-t-xs" style={{ color: "var(--tier-critical)" }}>
                     {sync.lastError}
                   </p>
                 ) : null}
@@ -180,20 +180,20 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                     <Plug size={13} /> 断开同步
                   </button>
                 </div>
-                <p className="text-[11px] leading-5 text-[var(--text-faint)]">
+                <p className="ap-t-xs leading-5 text-[var(--text-faint)]">
                   任务、微步骤、完成状态会双向实时同步；音量、番茄钟时长等设置保持设备本地，互不影响。
                 </p>
               </div>
             ) : (
               <div className="space-y-2.5">
-                <p className="text-[11.5px] leading-5 text-[var(--text-dim)]">
+                <p className="ap-t-xs leading-5 text-[var(--text-dim)]">
                   在电脑上运行 <code className="ap-mono">npm start</code>，终端会打印带 token 的地址。
                   用那个地址打开本页会自动完成配对；也可以手动粘贴 token：
                 </p>
                 <div className="flex gap-2">
                   <input
                     className="ap-input ap-mono"
-                    style={{ fontSize: 12 }}
+                    style={{ fontSize: "var(--fs-sm)" }}
                     placeholder="粘贴配对 token"
                     value={tokenDraft}
                     onChange={(event) => setTokenDraft(event.target.value)}
@@ -206,12 +206,12 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                   </button>
                 </div>
                 {connectError ? (
-                  <p className="text-[11.5px]" style={{ color: "var(--tier-critical)" }}>
+                  <p className="ap-t-xs" style={{ color: "var(--tier-critical)" }}>
                     {connectError}
                   </p>
                 ) : null}
                 {sync.serverHere === false ? (
-                  <p className="text-[11.5px]" style={{ color: "var(--tier-high)" }}>
+                  <p className="ap-t-xs" style={{ color: "var(--tier-high)" }}>
                     当前页面不是由本地服务托管的（/api/health 无响应），同步与 AI 都不可用。纯手动访问
                     <code className="ap-mono"> npm run dev </code>或<code className="ap-mono"> npm start </code>。
                   </p>
@@ -231,11 +231,11 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
             />
 
             {!sync.config ? (
-              <p className="mt-1 text-[11.5px] text-[var(--text-faint)]">需要先连接本地服务才能配置 AI。</p>
+              <p className="mt-1 ap-t-xs text-[var(--text-faint)]">需要先连接本地服务才能配置 AI。</p>
             ) : (
               <div className="mt-2 space-y-2.5">
                 {llm.info?.configured ? (
-                  <div className="ap-card space-y-1 px-3 py-2.5 text-[11.5px]">
+                  <div className="ap-card space-y-1 px-3 py-2.5 ap-t-xs">
                     <div className="flex justify-between gap-3">
                       <span className="text-[var(--text-faint)]">模型</span>
                       <span className="ap-mono truncate">{llm.info.model}</span>
@@ -256,7 +256,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                 ) : null}
 
                 {llm.info?.editable === false ? (
-                  <p className="text-[11.5px] text-[var(--text-faint)]">
+                  <p className="ap-t-xs text-[var(--text-faint)]">
                     配置来自服务器的 <code className="ap-mono">.env</code>，如需修改请编辑该文件后重启服务。
                   </p>
                 ) : (
@@ -265,7 +265,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                       <span className="ap-label block">Base URL</span>
                       <input
                         className="ap-input ap-mono"
-                        style={{ fontSize: 12 }}
+                        style={{ fontSize: "var(--fs-sm)" }}
                         placeholder="https://api.openai.com/v1"
                         value={llmBase}
                         onChange={(event) => setLlmBase(event.target.value)}
@@ -275,7 +275,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                       <span className="ap-label block">模型</span>
                       <input
                         className="ap-input ap-mono"
-                        style={{ fontSize: 12 }}
+                        style={{ fontSize: "var(--fs-sm)" }}
                         placeholder="gpt-4o-mini / gemini-2.0-flash / qwen-plus …"
                         value={llmModel}
                         onChange={(event) => setLlmModel(event.target.value)}
@@ -286,7 +286,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                       <input
                         type="password"
                         className="ap-input ap-mono"
-                        style={{ fontSize: 12 }}
+                        style={{ fontSize: "var(--fs-sm)" }}
                         placeholder={llm.info?.configured ? "留空则保留现有 Key" : "sk-…"}
                         value={llmKey}
                         onChange={(event) => setLlmKey(event.target.value)}
@@ -308,14 +308,14 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                         </button>
                       ) : null}
                     </div>
-                    <p className="text-[11px] leading-5 text-[var(--text-faint)]">
+                    <p className="ap-t-xs leading-5 text-[var(--text-faint)]">
                       任何 OpenAI 兼容端点都可以：OpenAI、Gemini 的 OpenAI 兼容层、DeepSeek、Moonshot、
                       本地 Ollama / LM Studio。Key 只保存在这台电脑的本地服务里，不会下发给浏览器、也不经过局域网明文传输。
                     </p>
                   </>
                 )}
                 {llm.error ? (
-                  <p className="text-[11.5px]" style={{ color: "var(--tier-critical)" }}>
+                  <p className="ap-t-xs" style={{ color: "var(--tier-critical)" }}>
                     {llm.error}
                   </p>
                 ) : null}
@@ -333,7 +333,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
               onChange={(value) => onPatch({ soundEnabled: value })}
             />
             <div className="flex items-center gap-3 pb-2">
-              <span className="text-[12px] text-[var(--text-dim)]">音量</span>
+              <span className="ap-t-sm text-[var(--text-dim)]">音量</span>
               <input
                 type="range"
                 min={0}
@@ -344,7 +344,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                 onChange={(event) => onPatch({ soundVolume: Number(event.target.value) })}
                 aria-label="音量"
               />
-              <span className="ap-mono w-8 text-right text-[11px] text-[var(--text-faint)]">
+              <span className="ap-mono w-8 text-right ap-t-xs text-[var(--text-faint)]">
                 {Math.round(state.settings.soundVolume * 100)}
               </span>
             </div>
@@ -378,7 +378,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
           <section>
             <h3 className="ap-label mb-1">专注</h3>
             <label className="flex items-center justify-between gap-3 py-2">
-              <span className="text-[13px]">番茄钟时长</span>
+              <span className="ap-t-base">番茄钟时长</span>
               <select
                 className="ap-select"
                 value={state.settings.pomodoroMinutes}
@@ -415,12 +415,12 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
                 }}
               />
             </div>
-            <p className="mt-2 text-[11px] leading-5 text-[var(--text-faint)]">
+            <p className="mt-2 ap-t-xs leading-5 text-[var(--text-faint)]">
               导出永远是最后一道保险：即使同步服务停了、浏览器数据被清了，也能靠这份 JSON 恢复。
             </p>
             {message ? (
               <p
-                className="mt-2 text-[11.5px]"
+                className="mt-2 ap-t-xs"
                 style={{ color: message.kind === "ok" ? "var(--pulse)" : "var(--tier-critical)" }}
               >
                 {message.text}
@@ -431,7 +431,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
           {/* ------------------------------- 数据 -------------------------------- */}
           <section>
             <h3 className="ap-label mb-1">数据</h3>
-            <dl className="ap-mono grid grid-cols-2 gap-y-1.5 py-1 text-[11.5px]">
+            <dl className="ap-mono grid grid-cols-2 gap-y-1.5 py-1 ap-t-xs">
               <dt className="text-[var(--text-faint)]">任务总数</dt>
               <dd className="text-right">{state.tasks.length}</dd>
               <dt className="text-[var(--text-faint)]">累计完成</dt>
@@ -446,7 +446,7 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
 
             {confirmReset ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-[12px] text-[var(--text-dim)]">清空所有任务？不可撤销。</span>
+                <span className="ap-t-sm text-[var(--text-dim)]">清空所有任务？不可撤销。</span>
                 <button
                   type="button"
                   className="ap-btn"

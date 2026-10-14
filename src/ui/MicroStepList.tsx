@@ -32,7 +32,7 @@ export function MicroStepList({ task, onToggleSubtask, onSetSubtasks, onBreakdow
         <button
           type="button"
           className="ap-btn"
-          style={{ padding: "3px 8px", fontSize: 11 }}
+          style={{ padding: "3px 8px", fontSize: "var(--fs-xs)" }}
           disabled={breakingDown}
           onClick={onBreakdown}
           title="优先调用 AI 做语义拆解；未配置或失败时自动回退到内置动词模板"
@@ -45,7 +45,7 @@ export function MicroStepList({ task, onToggleSubtask, onSetSubtasks, onBreakdow
       <ul className="space-y-1">
         {task.subtasks.map((sub, index) => (
           <li key={sub.id} className="group flex items-start gap-2">
-            <span className="ap-mono pt-0.5 text-[10px] text-[var(--text-faint)]">{index + 1}</span>
+            <span className="ap-mono pt-0.5 ap-t-2xs text-[var(--text-faint)]">{index + 1}</span>
             <TaskCheck
               checked={sub.done}
               size="sm"
@@ -53,7 +53,7 @@ export function MicroStepList({ task, onToggleSubtask, onSetSubtasks, onBreakdow
               onToggle={() => onToggleSubtask(sub.id)}
             />
             <span
-              className="flex-1 text-[12.5px] leading-6"
+              className="flex-1 ap-t-sm leading-6"
               style={sub.done ? { color: "var(--text-faint)", textDecoration: "line-through" } : undefined}
             >
               {sub.title}
@@ -74,7 +74,7 @@ export function MicroStepList({ task, onToggleSubtask, onSetSubtasks, onBreakdow
       <div className="flex items-center gap-1.5">
         <input
           className="ap-input"
-          style={{ padding: "5px 9px", fontSize: 12 }}
+          style={{ padding: "5px 9px", fontSize: "var(--fs-sm)" }}
           placeholder="加一个 5 分钟能做完的小步…"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}

@@ -23,7 +23,7 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
           type="button"
           className="ap-btn"
           data-variant="ghost"
-          style={{ padding: "5px 8px", fontSize: 12 }}
+          style={{ padding: "5px 8px", fontSize: "var(--fs-sm)" }}
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
         >
@@ -36,7 +36,7 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
             type="button"
             className="ap-btn"
             data-variant="ghost"
-            style={{ padding: "5px 8px", fontSize: 11 }}
+            style={{ padding: "5px 8px", fontSize: "var(--fs-xs)" }}
             onClick={onArchiveAll}
             title="归档后不再出现在清单里（数据仍保留在备份中）"
           >
@@ -59,7 +59,7 @@ export function CompletedSection({ tasks, onToggle, onArchiveAll, reduceMotion }
                 label={`撤销完成 ${task.title}`}
                 onToggle={() => onToggle(task)}
               />
-              <span className="flex-1 truncate text-[12.5px] text-[var(--text-faint)] line-through decoration-[var(--pulse)] decoration-2">
+              <span className="flex-1 truncate ap-t-sm text-[var(--text-faint)] line-through decoration-[var(--pulse)] decoration-2">
                 {task.title}
               </span>
               <button

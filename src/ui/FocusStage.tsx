@@ -164,7 +164,7 @@ export function FocusStage(props: Props) {
       <header className="flex items-center justify-between px-5 py-4 sm:px-8">
         <div className="flex items-center gap-2">
           <span className="ap-label">聚焦当下</span>
-          <span className="ap-mono text-[11px] text-[var(--text-faint)]">/ 只做这一件</span>
+          <span className="ap-mono ap-t-xs text-[var(--text-faint)]">/ 只做这一件</span>
         </div>
         <button type="button" className="ap-btn" data-variant="ghost" onClick={onExit}>
           <X size={14} /> 退出聚焦
@@ -178,7 +178,7 @@ export function FocusStage(props: Props) {
               <div className="space-y-3">
                 <span className="ap-chip">日常习惯</span>
                 <div aria-hidden="true" className="text-4xl">{habitProps.habit.emoji}</div>
-                <h1 className="text-[26px] leading-[1.3] font-semibold tracking-tight sm:text-[34px]">
+                <h1 className="ap-t-xl leading-[1.3] font-semibold tracking-tight sm:ap-t-2xl">
                   {habitProps.habit.title}
                 </h1>
                 <p className="ap-label">把今天的日常，变成现在的一小步。</p>
@@ -186,7 +186,7 @@ export function FocusStage(props: Props) {
 
               {isHabitDone ? (
                 <div className="space-y-4" role="status" aria-live="polite">
-                  <p className="text-[15px] text-[var(--pulse)]">今天已完成，做得好。</p>
+                  <p className="ap-t-md text-[var(--pulse)]">今天已完成，做得好。</p>
                   <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
                     回到清单
                   </button>
@@ -194,9 +194,8 @@ export function FocusStage(props: Props) {
               ) : (
                 <button
                   type="button"
-                  className="ap-btn mx-auto"
+                  className="ap-btn mx-auto ap-btn--cta"
                   data-variant="primary"
-                  style={{ padding: "11px 20px", fontSize: 14 }}
                   onClick={completeCurrentHabit}
                 >
                   <Check size={16} strokeWidth={3} /> 完成今日习惯
@@ -207,22 +206,20 @@ export function FocusStage(props: Props) {
                 <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
                   <button
                     type="button"
-                    className="ap-btn"
+                    className="ap-btn ap-btn--sm"
                     data-variant="ghost"
                     data-active={kickstart ? undefined : "true"}
                     disabled={isHabitDone}
-                    style={{ padding: "4px 10px", fontSize: 11.5 }}
                     onClick={() => switchMode(false)}
                   >
                     {pomodoroMinutes} 分钟
                   </button>
                   <button
                     type="button"
-                    className="ap-btn"
+                    className="ap-btn ap-btn--sm"
                     data-variant="ghost"
                     data-active={kickstart ? "true" : undefined}
                     disabled={isHabitDone}
-                    style={{ padding: "4px 10px", fontSize: 11.5 }}
                     onClick={() => switchMode(true)}
                   >
                     <Zap size={12} /> 2 分钟启动
@@ -230,7 +227,7 @@ export function FocusStage(props: Props) {
                 </div>
 
                 {kickstart && timer.status === "idle" && !isHabitDone ? (
-                  <p className="max-w-[38ch] text-center text-[12px] leading-6 text-[var(--text-faint)]">
+                  <p className="max-w-[38ch] text-center ap-t-sm leading-6 text-[var(--text-faint)]">
                     只要做两分钟，就能战胜拖延 —— 两分钟后你可以停，也可以接着做。
                   </p>
                 ) : null}
@@ -244,7 +241,7 @@ export function FocusStage(props: Props) {
 
                 {refillReady && !isHabitDone ? (
                   <div className="flex flex-col items-center gap-2">
-                    <p className="text-[12.5px] text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
+                    <p className="ap-t-sm text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
                     <button type="button" className="ap-btn" data-variant="primary" onClick={refill}>
                       <Zap size={13} /> 续杯 {pomodoroMinutes} 分钟
                     </button>
@@ -255,8 +252,8 @@ export function FocusStage(props: Props) {
           ) : (
             <div className="max-w-[380px] space-y-4 text-center">
               <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-              <p className="text-[15px]">这个日常习惯暂时不可用</p>
-              <p className="text-[12.5px] text-[var(--text-faint)]">它可能已被归档或移除。</p>
+              <p className="ap-t-md">这个日常习惯暂时不可用</p>
+              <p className="ap-t-sm text-[var(--text-faint)]">它可能已被归档或移除。</p>
               <button type="button" className="ap-btn" data-variant="primary" onClick={onExit}>
                 回到清单
               </button>
@@ -277,12 +274,12 @@ export function FocusStage(props: Props) {
                 ) : null}
               </div>
 
-              <h1 className="text-[26px] leading-[1.3] font-semibold tracking-tight sm:text-[34px]">
+              <h1 className="ap-t-xl leading-[1.3] font-semibold tracking-tight sm:ap-t-2xl">
                 {current.title}
               </h1>
 
               {current.notes.trim().length > 0 ? (
-                <p className="max-w-[46ch] text-[13px] leading-6 text-[var(--text-dim)]">{current.notes}</p>
+                <p className="max-w-[46ch] ap-t-base leading-6 text-[var(--text-dim)]">{current.notes}</p>
               ) : null}
             </div>
 
@@ -290,14 +287,14 @@ export function FocusStage(props: Props) {
               <ul className="space-y-2">
                 {current.subtasks.map((sub, index) => (
                   <li key={sub.id} className="flex items-center gap-3">
-                    <span className="ap-mono w-4 text-right text-[11px] text-[var(--text-faint)]">{index + 1}</span>
+                    <span className="ap-mono w-4 text-right ap-t-xs text-[var(--text-faint)]">{index + 1}</span>
                     <TaskCheck
                       checked={sub.done}
                       label={sub.done ? `取消完成 ${sub.title}` : `完成 ${sub.title}`}
                       onToggle={() => onToggleSubtask?.(current, sub.id)}
                     />
                     <span
-                      className="text-[14px]"
+                      className="ap-t-md"
                       style={sub.done ? { color: "var(--text-faint)", textDecoration: "line-through" } : undefined}
                     >
                       {sub.title}
@@ -307,7 +304,7 @@ export function FocusStage(props: Props) {
               </ul>
             ) : (
               <div className="space-y-2.5">
-                <p className="text-[12.5px] leading-6 text-[var(--text-faint)]">
+                <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
                   还没有微步骤。直接在这里拆一版 —— 把「这件事」切成 3~5 个 5 分钟能做的小动作，启动阻力会小很多。
                 </p>
                 <button
@@ -325,9 +322,8 @@ export function FocusStage(props: Props) {
             <div className="flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
-                className="ap-btn"
+                className="ap-btn ap-btn--cta"
                 data-variant="primary"
-                style={{ padding: "11px 20px", fontSize: 14 }}
                 onClick={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect();
                   onToggle?.(current, {
@@ -353,20 +349,18 @@ export function FocusStage(props: Props) {
               <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
                 <button
                   type="button"
-                  className="ap-btn"
+                  className="ap-btn ap-btn--sm"
                   data-variant="ghost"
                   data-active={kickstart ? undefined : "true"}
-                  style={{ padding: "4px 10px", fontSize: 11.5 }}
                   onClick={() => switchMode(false)}
                 >
                   {pomodoroMinutes} 分钟
                 </button>
                 <button
                   type="button"
-                  className="ap-btn"
+                  className="ap-btn ap-btn--sm"
                   data-variant="ghost"
                   data-active={kickstart ? "true" : undefined}
-                  style={{ padding: "4px 10px", fontSize: 11.5 }}
                   onClick={() => switchMode(true)}
                 >
                   <Zap size={12} /> 2 分钟启动
@@ -374,7 +368,7 @@ export function FocusStage(props: Props) {
               </div>
 
               {kickstart && timer.status === "idle" ? (
-                <p className="max-w-[38ch] text-center text-[12px] leading-6 text-[var(--text-faint)]">
+                <p className="max-w-[38ch] text-center ap-t-sm leading-6 text-[var(--text-faint)]">
                   只要做两分钟，就能战胜拖延 —— 两分钟后你可以停，也可以接着做。
                 </p>
               ) : null}
@@ -383,7 +377,7 @@ export function FocusStage(props: Props) {
 
               {refillReady ? (
                 <div className="flex flex-col items-center gap-2">
-                  <p className="text-[12.5px] text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
+                  <p className="ap-t-sm text-[var(--tier-high)]">两分钟到了 —— 势头还在的话，接着做？</p>
                   <button type="button" className="ap-btn" data-variant="primary" onClick={refill}>
                     <Zap size={13} /> 续杯 {pomodoroMinutes} 分钟
                   </button>
@@ -396,8 +390,8 @@ export function FocusStage(props: Props) {
           // 否则用户刚清空清单，屏幕却说他「跳过了一切」。
           <div className="max-w-[380px] space-y-4 text-center">
             <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-            <p className="text-[15px]">清单清空了</p>
-            <p className="text-[12.5px] leading-6 text-[var(--text-faint)]">
+            <p className="ap-t-md">清单清空了</p>
+            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
               今天想做的都做完了 —— 休息一下吧，或者回清单记下一件事。
             </p>
             <div className="flex justify-center gap-2">
@@ -409,8 +403,8 @@ export function FocusStage(props: Props) {
         ) : (
           <div className="max-w-[380px] space-y-4 text-center">
             <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-            <p className="text-[15px]">候选都被你跳过了</p>
-            <p className="text-[12.5px] leading-6 text-[var(--text-faint)]">
+            <p className="ap-t-md">候选都被你跳过了</p>
+            <p className="ap-t-sm leading-6 text-[var(--text-faint)]">
               这说明今天真正想做的可能不在清单里，或者现在该休息。
             </p>
             <div className="flex justify-center gap-2">

@@ -293,8 +293,8 @@ export default function App() {
           {allClear && !clearBannerDismissed ? (
             <div className="ap-card ap-reveal flex items-center gap-2 px-3 py-2">
               <span aria-hidden="true">🏆</span>
-              <span className="min-w-0 flex-1 text-[12px]">今日全部清空，战报已生成</span>
-              <button type="button" className="ap-btn" style={{ padding: "2px 9px", fontSize: 11 }} onClick={() => setDebriefOpen(true)}>
+              <span className="min-w-0 flex-1 ap-t-sm">今日全部清空，战报已生成</span>
+              <button type="button" className="ap-btn" style={{ padding: "2px 9px", fontSize: "var(--fs-xs)" }} onClick={() => setDebriefOpen(true)}>
                 查看
               </button>
               <button
@@ -353,7 +353,7 @@ export default function App() {
             onRemove={removeTask}
           />
 
-          <p className="pt-2 text-center text-[10.5px] leading-5 text-[var(--text-faint)]">
+          <p className="pt-2 text-center ap-t-2xs leading-5 text-[var(--text-faint)]">
             Alt+S 收起面板 · Alt+F 聚焦 · Alt+N 记一笔
             <br />
             {sync.config

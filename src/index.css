@@ -641,7 +641,7 @@ select {
   border: none;
   background: transparent;
   color: var(--text);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   outline: none;
 }
 
@@ -1062,4 +1062,64 @@ select {
   align-self: stretch;
   margin-block: 3px;
   background: var(--line-strong);
+}
+
+/* =========================================================================
+   P1 UI 基建一：键盘焦点环修复（2026-10 UI 方案 1.1）
+
+   全局 :focus-visible 已存在（用 --pulse），但 .ap-input:focus / .ap-select:focus
+   的 outline:none 在鼠标场景是对的（靠边框高亮），键盘场景却把焦点环一起盖掉了。
+   键盘聚焦时 :focus 与 :focus-visible 同时命中，同特异度下后出现者胜出——
+   这段写在文件末尾，所以键盘场景焦点环回归，鼠标场景维持边框高亮。
+   ========================================================================= */
+.ap-input:focus-visible,
+.ap-select:focus-visible,
+.ap-pill-input:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+/* =========================================================================
+   P1 UI 基建二：字号刻度（2026-10 UI 方案 1.2）
+
+   此前 10.5~34 共 14 种字号，散布在 84 处 Tailwind 任意值 + 43 处内联 style。
+   收敛为 8 档；结构 token（与主题无关），双主题共用。
+   工具类 .ap-t-* 与 Tailwind 类平级混用，只设 font-size，不动 line-height。
+   ========================================================================= */
+:root {
+  --fs-2xs: 10.5px;
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-base: 13.5px;
+  --fs-md: 15px;
+  --fs-lg: 19px;
+  --fs-xl: 26px;
+  --fs-2xl: 34px;
+}
+.ap-t-2xs { font-size: var(--fs-2xs); }
+.ap-t-xs { font-size: var(--fs-xs); }
+.ap-t-sm { font-size: var(--fs-sm); }
+.ap-t-base { font-size: var(--fs-base); }
+.ap-t-md { font-size: var(--fs-md); }
+.ap-t-lg { font-size: var(--fs-lg); }
+.ap-t-xl { font-size: var(--fs-xl); }
+.ap-t-2xl { font-size: var(--fs-2xl); }
+
+/* P1 UI 基建三：按钮/表单尺寸变体（方案 1.3）——归拢此前重复的内联
+   padding + fontSize。小按钮用于分段控件与紧凑行，CTA 用于聚焦台面主行动。 */
+.ap-btn--sm {
+  padding: 4px 9px;
+  font-size: var(--fs-xs);
+}
+.ap-btn--cta {
+  padding: 11px 20px;
+  font-size: var(--fs-md);
+}
+.ap-select--sm {
+  padding: 5px 7px;
+  font-size: var(--fs-sm);
+}
+.ap-input--sm {
+  padding: 5px 7px;
+  font-size: var(--fs-sm);
 }

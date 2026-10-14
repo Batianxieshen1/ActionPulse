@@ -58,7 +58,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
         type="button"
         className="ap-btn"
         data-variant="ghost"
-        style={{ padding: "3px 8px", fontSize: 11.5 }}
+        style={{ padding: "3px 8px", fontSize: "var(--fs-xs)" }}
         onClick={() => {
           setOpen(true);
           setAdding(true);
@@ -76,7 +76,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
           type="button"
           className="ap-btn"
           data-variant="ghost"
-          style={{ padding: "3px 8px", fontSize: 11.5 }}
+          style={{ padding: "3px 8px", fontSize: "var(--fs-xs)" }}
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
         >
@@ -99,7 +99,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 type="button"
                 className="ap-btn ml-auto min-w-0 max-w-full"
                 data-variant="ghost"
-                style={{ padding: "3px 8px", fontSize: 11.5 }}
+                style={{ padding: "3px 8px", fontSize: "var(--fs-xs)" }}
                 aria-label={`开始聚焦日常：${nextHabit.title}`}
                 onClick={() => onFocusHabit(nextHabit)}
               >
@@ -189,7 +189,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
             <span className="ap-pill-form">
               <select
                 className="ap-select"
-                style={{ padding: "1px 4px", fontSize: 12, border: "none", background: "transparent" }}
+                style={{ padding: "1px 4px", fontSize: "var(--fs-sm)", border: "none", background: "transparent" }}
                 value={emoji}
                 onChange={(event) => setEmoji(event.target.value)}
                 aria-label="习惯图标"
@@ -237,7 +237,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
               type="button"
               className="ap-btn"
               data-variant="ghost"
-              style={{ padding: "3px 6px", fontSize: 10.5 }}
+              style={{ padding: "3px 6px", fontSize: "var(--fs-2xs)" }}
               onClick={() => setShowArchived((value) => !value)}
             >
               已归档 {archived.length}
@@ -256,7 +256,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 type="button"
                 className="ap-btn"
                 data-variant="ghost"
-                style={{ padding: "1px 5px", fontSize: 10.5 }}
+                style={{ padding: "1px 5px", fontSize: "var(--fs-2xs)" }}
                 onClick={() => onUnarchive(habit.id)}
               >
                 恢复

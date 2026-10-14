@@ -29,7 +29,7 @@ export function ToastStack({ toasts, onDismiss }: Props) {
           }
         >
           {toast.tone === "hot" ? <Flame size={14} /> : <Sparkles size={14} />}
-          <span className="text-[13px]">{toast.text}</span>
+          <span className="ap-t-base">{toast.text}</span>
         </button>
       ))}
     </div>

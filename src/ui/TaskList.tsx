@@ -64,7 +64,7 @@ export function TaskList({
   if (tasks.length === 0 && lingering.length === 0) {
     // 面板空态刻意压成单行弱提示：完整叙事（能量环、语录、指引）在右侧台面，同屏不重复
     return (
-      <p className="px-2 py-4 text-center text-[11.5px] leading-5 text-[var(--text-faint)]">
+      <p className="px-2 py-4 text-center ap-t-xs leading-5 text-[var(--text-faint)]">
         清单是空的 —— 写下第一件事就行，系统会替你算。
       </p>
     );

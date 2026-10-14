@@ -103,7 +103,7 @@ export function QuickAdd({ onAdd }: Props) {
             置灰禁用让「谁说了算」可见可懂 —— 双事实源并存是视觉谎言。逐字段判断，
             因为标记往往只覆盖一部分，其余下拉仍是生效的缺省值。 */}
         <select
-          className="ap-select text-[11px]"
+          className="ap-select ap-t-xs"
           style={{ opacity: parsed.importance !== undefined ? 0.45 : undefined }}
           disabled={parsed.importance !== undefined}
           title={parsed.importance !== undefined ? "已由标题里的标记指定" : undefined}
@@ -117,7 +117,7 @@ export function QuickAdd({ onAdd }: Props) {
         </select>
 
         <select
-          className="ap-select text-[11px]"
+          className="ap-select ap-t-xs"
           style={{ opacity: parsed.due !== undefined ? 0.45 : undefined }}
           disabled={parsed.due !== undefined}
           title={parsed.due !== undefined ? "已由标题里的标记指定" : undefined}
@@ -133,7 +133,7 @@ export function QuickAdd({ onAdd }: Props) {
         </select>
 
         <select
-          className="ap-select text-[11px]"
+          className="ap-select ap-t-xs"
           style={{ opacity: parsed.estimateMinutes !== undefined ? 0.45 : undefined }}
           disabled={parsed.estimateMinutes !== undefined}
           title={parsed.estimateMinutes !== undefined ? "已由标题里的标记指定" : undefined}
@@ -151,7 +151,7 @@ export function QuickAdd({ onAdd }: Props) {
         </select>
       </div>
 
-      <p className="text-[10.5px] leading-5 text-[var(--text-faint)]">
+      <p className="ap-t-2xs leading-5 text-[var(--text-faint)]">
         也可以直接写：<code className="ap-mono">!high</code> <code className="ap-mono">!med</code>{" "}
         <code className="ap-mono">!low</code> · <code className="ap-mono">今天</code>{" "}
         <code className="ap-mono">明天</code> <code className="ap-mono">周三</code> ·{" "}

@@ -63,7 +63,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
           <div className="ap-card w-full max-w-[520px] space-y-5 p-6">
             <header className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-[17px] font-semibold">今日战报</h2>
+                <h2 className="ap-t-lg font-semibold">今日战报</h2>
                 <p className="ap-label mt-1">{stats.today}</p>
               </div>
               <button type="button" className="ap-icon-btn" aria-label="关闭战报" onClick={onClose}>
@@ -75,10 +75,10 @@ export function DebriefSheet({ stats, onClose }: Props) {
               {cells.map((cell) => (
                 <div key={cell.label} className="rounded-[var(--radius-md)] border border-[var(--line)] px-3 py-2.5">
                   <div className="ap-label">{cell.label}</div>
-                  <div className="ap-mono mt-1 text-[19px] leading-none font-semibold">
+                  <div className="ap-mono mt-1 ap-t-lg leading-none font-semibold">
                     {cell.value}
                     {cell.hint ? (
-                      <span className="ml-1 text-[10px] font-normal text-[var(--text-faint)]">{cell.hint}</span>
+                      <span className="ml-1 ap-t-2xs font-normal text-[var(--text-faint)]">{cell.hint}</span>
                     ) : null}
                   </div>
                 </div>
@@ -87,7 +87,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
 
             {/* 合并策略亮出来：数字取的是各设备的最大值。自己发现「数字少了」会伤信任，
                 主动说清楚就把「缺陷」变成「诚实的设计」。 */}
-            <p className="px-0.5 text-[10.5px] leading-4 text-[var(--text-faint)]">
+            <p className="px-0.5 ap-t-2xs leading-4 text-[var(--text-faint)]">
               专注时长在多端之间取较大值合并 —— 宁可少算，不做虚高。
             </p>
 
@@ -108,7 +108,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-faint)]">
+                <p className="mt-2 ap-t-2xs leading-4 text-[var(--text-faint)]">
                   {stats.weekEstimateMix.quickPercent >= 60 && stats.weekEstimateMix.total >= 3
                     ? `速赢占比 ${stats.weekEstimateMix.quickPercent}% —— 算法在喂你小任务，记得也喂点大的。`
                     : `速赢占比 ${stats.weekEstimateMix.quickPercent}%。`}
@@ -124,7 +124,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
                       用 title 当 key 会直接撞车。这个列表是静态且不可重排的，下标在这里是正确的。
                       注意生产构建下 React 不会给出重复 key 的告警，所以这类问题不会被 console 抓到。 */}
                   {stats.taskTitles.map((title, index) => (
-                    <li key={`${index}-${title}`} className="flex items-center gap-2 text-[12.5px] text-[var(--text-dim)]">
+                    <li key={`${index}-${title}`} className="flex items-center gap-2 ap-t-sm text-[var(--text-dim)]">
                       <Check size={12} strokeWidth={3} className="shrink-0 text-[var(--pulse)]" />
                       <span className="min-w-0 flex-1 truncate">{title}</span>
                     </li>
@@ -135,7 +135,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
 
             <div>
               <div className="ap-label mb-1.5">Markdown 战报</div>
-              <pre className="ap-scroll max-h-[168px] overflow-auto rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--control-bg)] p-3 text-[11.5px] leading-5 whitespace-pre-wrap">
+              <pre className="ap-scroll max-h-[168px] overflow-auto rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--control-bg)] p-3 ap-t-xs leading-5 whitespace-pre-wrap">
                 {markdown}
               </pre>
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
@@ -144,7 +144,7 @@ export function DebriefSheet({ stats, onClose }: Props) {
                   {copyState === "ok" ? "已复制" : "复制 Markdown"}
                 </button>
                 {copyState === "fail" ? (
-                  <span className="text-[11.5px]" style={{ color: "var(--tier-high)" }}>
+                  <span className="ap-t-xs" style={{ color: "var(--tier-high)" }}>
                     浏览器不允许自动复制 —— 上面的文本可以直接手动选中
                   </span>
                 ) : null}

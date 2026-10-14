@@ -158,7 +158,7 @@ export function TaskCard({
             {editing ? (
               <input
                 className="ap-input"
-                style={{ padding: "3px 7px", fontSize: 13.5 }}
+                style={{ padding: "3px 7px", fontSize: "var(--fs-base)" }}
                 autoFocus
                 value={titleDraft}
                 onChange={(event) => setTitleDraft(event.target.value)}
@@ -174,7 +174,7 @@ export function TaskCard({
             ) : (
               <button
                 type="button"
-                className="ap-card__title flex-1 cursor-text text-left text-[13.5px] leading-6 font-medium"
+                className="ap-card__title flex-1 cursor-text text-left ap-t-base leading-6 font-medium"
                 title="点击编辑标题"
                 onClick={() => {
                   setTitleDraft(task.title);
@@ -247,7 +247,7 @@ export function TaskCard({
                   <input
                     type="date"
                     className="ap-input"
-                    style={{ padding: "5px 7px", fontSize: 12 }}
+                    style={{ padding: "5px 7px", fontSize: "var(--fs-sm)" }}
                     value={task.due ?? ""}
                     onChange={(event) => onUpdate(task.id, { due: event.target.value || null })}
                   />
@@ -260,7 +260,7 @@ export function TaskCard({
                     min={0}
                     step={5}
                     className="ap-input ap-mono"
-                    style={{ padding: "5px 7px", fontSize: 12 }}
+                    style={{ padding: "5px 7px", fontSize: "var(--fs-sm)" }}
                     value={task.estimateMinutes ?? ""}
                     placeholder="未估"
                     onChange={(event) => {
@@ -295,7 +295,7 @@ export function TaskCard({
                 <textarea
                   className="ap-input"
                   rows={2}
-                  style={{ fontSize: 12, resize: "vertical" }}
+                  style={{ fontSize: "var(--fs-sm)", resize: "vertical" }}
                   placeholder="补充一点上下文，或写下卡住的地方…"
                   value={task.notes}
                   onChange={(event) => onUpdate(task.id, { notes: event.target.value })}
@@ -309,7 +309,7 @@ export function TaskCard({
                       <button
                         type="button"
                         className="ap-btn"
-                        style={{ padding: "3px 9px", fontSize: 11 }}
+                        style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
                         disabled={index === 0}
                         onClick={() => onMove(task.id, index - 1)}
                       >
@@ -318,7 +318,7 @@ export function TaskCard({
                       <button
                         type="button"
                         className="ap-btn"
-                        style={{ padding: "3px 9px", fontSize: 11 }}
+                        style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
                         disabled={index === total - 1}
                         onClick={() => onMove(task.id, index + 1)}
                       >
@@ -330,11 +330,11 @@ export function TaskCard({
 
                 {confirmRemove ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-[var(--text-dim)]">确定删除？</span>
+                    <span className="ap-t-xs text-[var(--text-dim)]">确定删除？</span>
                     <button
                       type="button"
                       className="ap-btn"
-                      style={{ padding: "3px 9px", fontSize: 11, color: "var(--tier-critical)" }}
+                      style={{ padding: "3px 9px", fontSize: "var(--fs-xs)", color: "var(--tier-critical)" }}
                       onClick={() => onRemove(task.id)}
                     >
                       删除
@@ -342,7 +342,7 @@ export function TaskCard({
                     <button
                       type="button"
                       className="ap-btn"
-                      style={{ padding: "3px 9px", fontSize: 11 }}
+                      style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
                       onClick={() => setConfirmRemove(false)}
                     >
                       取消
@@ -353,7 +353,7 @@ export function TaskCard({
                     type="button"
                     className="ap-btn"
                     data-variant="danger"
-                    style={{ padding: "3px 9px", fontSize: 11 }}
+                    style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
                     onClick={() => setConfirmRemove(true)}
                   >
                     <Trash2 size={11} />

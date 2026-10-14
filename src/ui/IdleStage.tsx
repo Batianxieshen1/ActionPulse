@@ -61,29 +61,29 @@ export function IdleStage({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="ap-mono text-[34px] leading-none font-semibold">{energy.percent}</span>
+            <span className="ap-mono ap-t-2xl leading-none font-semibold">{energy.percent}</span>
             <span className="ap-label mt-1">今日能量 %</span>
           </div>
         </div>
 
-        <dl className="ap-mono space-y-2.5 text-[12px]">
+        <dl className="ap-mono space-y-2.5 ap-t-sm">
           <div className="flex items-baseline gap-3">
             <dt className="w-16 text-[var(--text-faint)]">今日承诺</dt>
-            <dd className="text-[15px]">
+            <dd className="ap-t-md">
               {energy.done}/{energy.total}
             </dd>
           </div>
           <div className="flex items-baseline gap-3">
             <dt className="w-16 text-[var(--text-faint)]">连续天数</dt>
-            <dd className="text-[15px]">{streak}</dd>
+            <dd className="ap-t-md">{streak}</dd>
           </div>
           <div className="flex items-baseline gap-3">
             <dt className="w-16 text-[var(--text-faint)]">当前连击</dt>
-            <dd className="text-[15px]">x{combo}</dd>
+            <dd className="ap-t-md">x{combo}</dd>
           </div>
           <div className="flex items-baseline gap-3">
             <dt className="w-16 text-[var(--text-faint)]">累计完成</dt>
-            <dd className="text-[15px]">{totalCompleted}</dd>
+            <dd className="ap-t-md">{totalCompleted}</dd>
           </div>
         </dl>
       </div>
@@ -91,7 +91,7 @@ export function IdleStage({
       {focus ? (
         <div className="w-full space-y-4 text-center">
           <span className="ap-label">现在只做这件事</span>
-          <h2 className="text-[30px] leading-[1.25] font-semibold tracking-tight">{focus.title}</h2>
+          <h2 className="ap-t-2xl leading-[1.25] font-semibold tracking-tight">{focus.title}</h2>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <UrgencyBadge score={urgencyScore(focus, today)} />
             {focus.due ? (
@@ -109,7 +109,7 @@ export function IdleStage({
               type="button"
               className="ap-btn"
               data-variant="primary"
-              style={{ padding: "11px 20px", fontSize: 14 }}
+              style={{ padding: "11px 20px", fontSize: "var(--fs-md)" }}
               onClick={onEnterFocus}
             >
               <Target size={15} /> 进入聚焦模式
@@ -133,8 +133,8 @@ export function IdleStage({
       ) : (
         <div className="space-y-3 text-center">
           <Moon size={26} className="mx-auto text-[var(--text-faint)]" />
-          <h2 className="text-[22px] font-semibold">清单见底了</h2>
-          <p className="text-[12.5px] text-[var(--text-faint)]">在左边写下下一件事，或者好好休息。</p>
+          <h2 className="ap-t-xl font-semibold">清单见底了</h2>
+          <p className="ap-t-sm text-[var(--text-faint)]">在左边写下下一件事，或者好好休息。</p>
         </div>
       )}
 
@@ -142,24 +142,24 @@ export function IdleStage({
         <div className="w-full">
           <div className="mb-2 flex items-center justify-between">
             <span className="ap-label">紧随其后</span>
-            <button type="button" className="ap-btn" data-variant="ghost" style={{ fontSize: 11, padding: "3px 8px" }} onClick={onEnterFocus}>
+            <button type="button" className="ap-btn" data-variant="ghost" style={{ fontSize: "var(--fs-xs)", padding: "3px 8px" }} onClick={onEnterFocus}>
               全部收进聚焦 <ArrowRight size={11} />
             </button>
           </div>
           <ul className="space-y-1.5">
             {upcoming.map((task) => (
               <li key={task.id} className="flex items-center gap-3 rounded-lg border border-[var(--line)] px-3 py-2">
-                <span className="ap-mono w-6 text-[11px] text-[var(--text-faint)]">
+                <span className="ap-mono w-6 ap-t-xs text-[var(--text-faint)]">
                   {String(urgencyScore(task, today)).padStart(2, "0")}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[13px]">{task.title}</span>
+                <span className="min-w-0 flex-1 truncate ap-t-base">{task.title}</span>
               </li>
             ))}
           </ul>
         </div>
       ) : null}
 
-      <p className="max-w-[44ch] text-center text-[12px] leading-6 text-[var(--text-faint)]">{quote}</p>
+      <p className="max-w-[44ch] text-center ap-t-sm leading-6 text-[var(--text-faint)]">{quote}</p>
     </div>
   );
 }

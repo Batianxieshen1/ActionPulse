@@ -35,7 +35,7 @@ export function EnergyBar({ done, total, percent, combo, streak, onOpenDebrief }
               <span className="ap-mono">{streak}</span> 天
             </span>
           ) : null}
-          <span className="ap-mono text-[11px] text-[var(--text-dim)]">
+          <span className="ap-mono ap-t-xs text-[var(--text-dim)]">
             {done}/{total}
           </span>
         </div>

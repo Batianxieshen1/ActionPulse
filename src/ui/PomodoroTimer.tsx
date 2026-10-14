@@ -43,7 +43,7 @@ export function PomodoroRing({ timer, label, size = 148, disabled = false }: Pro
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="ap-mono text-[26px] leading-none font-semibold tracking-tight">
+          <span className="ap-mono ap-t-xl leading-none font-semibold tracking-tight">
             {format(timer.remainingMs)}
           </span>
           <span className="ap-label mt-1.5">{statusLabel}</span>

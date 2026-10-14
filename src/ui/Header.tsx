@@ -52,7 +52,7 @@ export function Header({
 
       <div className="flex items-center justify-between gap-2 px-4 pt-1 pb-3">
         <div className="min-w-0">
-          <h1 className="text-[15px] leading-tight font-semibold tracking-tight">
+          <h1 className="ap-t-md leading-tight font-semibold tracking-tight">
             ActionPulse
           </h1>
           <p className="ap-label mt-0.5">脉冲行动 · 替你做决定</p>
@@ -126,20 +126,18 @@ export function Header({
         <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
           <button
             type="button"
-            className="ap-btn"
+            className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(view === "list")}
-            style={{ padding: "4px 9px", fontSize: 11.5 }}
             onClick={() => onViewChange("list")}
           >
             <List size={12} /> 清单
           </button>
           <button
             type="button"
-            className="ap-btn"
+            className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(view === "board")}
-            style={{ padding: "4px 9px", fontSize: 11.5 }}
             onClick={() => onViewChange("board")}
           >
             <LayoutGrid size={12} /> 四象限
@@ -152,10 +150,9 @@ export function Header({
         <div className="flex rounded-[10px] border border-[var(--line)] p-0.5">
           <button
             type="button"
-            className="ap-btn"
+            className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(mode === "auto")}
-            style={{ padding: "4px 9px", fontSize: 11.5 }}
             title="系统按紧迫度算法自动排序"
             onClick={() => onModeChange("auto")}
           >
@@ -163,10 +160,9 @@ export function Header({
           </button>
           <button
             type="button"
-            className="ap-btn"
+            className="ap-btn ap-btn--sm"
             data-variant="ghost"
             data-active={active(mode === "manual")}
-            style={{ padding: "4px 9px", fontSize: 11.5 }}
             title="自己拖拽排序与四象限归类"
             onClick={() => onModeChange("manual")}
           >

@@ -62,7 +62,7 @@ export function QuadrantBoard({
           <span className="font-medium text-[var(--text-dim)]">{title}</span>
           <span className="ap-mono text-[var(--text-faint)]">{list.length}</span>
         </header>
-        <p className="mb-1.5 text-[10px] text-[var(--text-faint)]">{hint}</p>
+        <p className="mb-1.5 ap-t-2xs text-[var(--text-faint)]">{hint}</p>
         <div className="space-y-1.5">
           {list.map((task, index) => (
             <div key={task.id} draggable onDragStart={() => setDraggingId(task.id)} onDragEnd={() => setDraggingId(null)}>
@@ -91,7 +91,7 @@ export function QuadrantBoard({
             </div>
           ))}
           {list.length === 0 ? (
-            <p className="py-3 text-center text-[10.5px] text-[var(--text-faint)]">拖到这里</p>
+            <p className="py-3 text-center ap-t-2xs text-[var(--text-faint)]">拖到这里</p>
           ) : null}
         </div>
       </section>
