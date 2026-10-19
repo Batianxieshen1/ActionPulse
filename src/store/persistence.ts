@@ -24,11 +24,21 @@ export function loadState(storage: StorageLike): AppState {
   }
 }
 
-export function saveState(storage: StorageLike, state: AppState): void {
+export type SaveResult = { ok: true } | { ok: false; error: unknown };
+
+/**
+ * 保存到 localStorage。
+ *
+ * 失败（配额满 / 隐私模式）时**不抛出**——内存状态仍然可用，应用继续降级运行；
+ * 但把失败**如实返回**，让调用方能提示用户「改动没有落盘」。
+ * 静默的降级曾让用户在配额满后持续操作、刷新即丢（见审计 Bug 4）。
+ */
+export function saveState(storage: StorageLike, state: AppState): SaveResult {
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(createBackup(state)));
-  } catch {
-    // 配额超限或隐私模式下静默降级：内存里的状态仍然可用。
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error };
   }
 }
 

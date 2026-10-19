@@ -21,6 +21,18 @@ export interface PomodoroApi {
 }
 
 /**
+ * 时长配置变化时，是否应把计时器同步到新时长（并回到 idle）。
+ *
+ * 只有 idle / finished 同步；running / paused 一律不动。
+ * **关键约束**：绝不能让 status 变化本身触发重置 —— 那会让倒计时归零后的
+ * "finished"（"时间到" 文案与高亮描边）在 effect 里被立即改回 idle，
+ * 用户永远看不到完成态。见审计 Bug 2。
+ */
+export function shouldResetOnDurationChange(status: PomodoroStatus): boolean {
+  return status === "idle" || status === "finished";
+}
+
+/**
  * 极简番茄钟（PRD §4 模块2 / v2.1 模块二）。
  * 用「目标结束时间戳」而不是 setInterval 累加计时，这样后台标签页被节流也不会走慢。
  */
@@ -33,14 +45,20 @@ export function usePomodoro(minutes: number, onFinish?: () => void): PomodoroApi
   const deadlineRef = useRef<number | null>(null);
   const finishedRef = useRef(false);
 
+  // 用 ref 镜像最新 status，让下面的 effect 只在「配置变化」时动作，不把 status 当触发源
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
   // 时长设置变化时，未开始/已完成的计时器同步到新时长。正在跑的一律不动。
+  const prevConfiguredMsRef = useRef(configuredMs);
   useEffect(() => {
-    if (status === "idle" || status === "finished") {
-      setRemainingMs(configuredMs);
-      setActiveTotalMs(configuredMs);
-      setStatus("idle");
-    }
-  }, [configuredMs, status]);
+    if (prevConfiguredMsRef.current === configuredMs) return;
+    prevConfiguredMsRef.current = configuredMs;
+    if (!shouldResetOnDurationChange(statusRef.current)) return;
+    setRemainingMs(configuredMs);
+    setActiveTotalMs(configuredMs);
+    setStatus("idle");
+  }, [configuredMs]);
 
   useEffect(() => {
     if (status !== "running") return;

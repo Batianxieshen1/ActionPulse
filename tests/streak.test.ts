@@ -115,4 +115,29 @@ describe("todayEnergy", () => {
     expect(result.percent).toBe(100);
     expect(result.percent).toBeLessThanOrEqual(100);
   });
+
+  it("【审计 Bug 1】历史已完成且未归档的任务，不应在次日清晨假满充能量槽", () => {
+    // 昨天完成、due 是昨天、用户没有手动归档（绝大多数用户的常态）。
+    // 修复前：due <= today 收进 scope、done 计入分子 → {1/1, 100%}，连坐触发假"全部清空"横幅。
+    const yesterdayDone = makeTask({
+      id: "old",
+      title: "昨天完成的事",
+      due: "2026-10-07",
+      done: true,
+      completedAt: "2026-10-07T10:00:00.000Z",
+      archived: false,
+    });
+    expect(todayEnergy([yesterdayDone], [], TODAY)).toEqual({ done: 0, total: 0, percent: 0 });
+  });
+
+  it("【审计 Bug 1】幽灵任务不会稀释今日真实承诺（今日承诺只算仍未完成的）", () => {
+    const yesterdayDone = makeTask({
+      id: "old",
+      due: "2026-10-07",
+      done: true,
+      completedAt: "2026-10-07T10:00:00.000Z",
+    });
+    const todayPending = makeTask({ id: "new", due: TODAY });
+    expect(todayEnergy([yesterdayDone, todayPending], [], TODAY)).toEqual({ done: 0, total: 1, percent: 0 });
+  });
 });

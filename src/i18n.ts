@@ -57,6 +57,7 @@ const zh = {
   "toast.offline": "同步服务未响应，已切回纯本地模式",
   "toast.unauthorized": "同步 token 无效，请重新配对",
   "toast.demoFeedback": "这就是打勾的反馈——真的任务在下面等你",
+  "toast.storageFull": "本地存储已满，改动无法保存 —— 请导出备份或清理空间",
 
   // ---------- Header ----------
   "header.subtitle": "脉冲行动 · 替你做决定",
@@ -468,6 +469,7 @@ const en: Record<TKey, string> = {
   "toast.offline": "Sync service not responding — switched to pure local mode",
   "toast.unauthorized": "Sync token is invalid, please re-pair",
   "toast.demoFeedback": "That's what checking off feels like — real tasks await below",
+  "toast.storageFull": "Local storage is full — changes can't be saved. Export a backup or free up space",
 
   "header.subtitle": "Pulse Action · it decides for you",
   "header.sync": "Sync status & settings",

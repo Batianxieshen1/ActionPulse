@@ -10,12 +10,20 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
+/**
+ * 空状态骨架。**必须与 index.mjs 的 SCHEMA_VERSION 及
+ * 客户端 domain/validation.ts 的 BACKUP_VERSION 保持同版**——
+ * 三处任何一处落后，全新环境的 /api/state 与 /api/health 就会互相矛盾
+ * （曾经写死 v2 且缺 habits/daily，见审计 Bug 3）。
+ */
 const EMPTY_STATE = {
-  version: 2,
+  version: 3,
   tasks: [],
+  habits: [],
   settings: {},
   stats: { combo: 0, bestCombo: 0, lastCompletionAt: null, totalCompleted: 0, completionDates: [] },
   tombstones: {},
+  daily: { focusMinutes: {}, comboPeak: {} },
 };
 
 export function createStore({ file }) {

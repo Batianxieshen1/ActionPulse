@@ -63,3 +63,27 @@ describe("loadState", () => {
     expect(() => saveState(hostile, defaultState())).not.toThrow();
   });
 });
+
+describe("saveState 失败信号（审计 Bug 4）", () => {
+  const throwing: StorageLike = {
+    getItem: () => null,
+    setItem: () => {
+      const error = new Error("quota exceeded");
+      error.name = "QuotaExceededError";
+      throw error;
+    },
+    removeItem: () => undefined,
+  };
+
+  it("配额异常不抛出（降级保留），但如实返回失败供上层提示", () => {
+    const result = saveState(throwing, defaultState());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect((result.error as Error).name).toBe("QuotaExceededError");
+    }
+  });
+
+  it("正常写入返回 ok: true，让「恢复」可以被侦测（解除一次性提示）", () => {
+    expect(saveState(memoryStorage(), defaultState()).ok).toBe(true);
+  });
+});

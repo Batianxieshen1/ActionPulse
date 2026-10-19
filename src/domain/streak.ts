@@ -51,9 +51,13 @@ export function todayEnergy(
 ): EnergySnapshot {
   const scope = tasks.filter((task) => {
     if (task.archived) return false;
-    const dueToday = task.due !== null && task.due <= today;
+    // 今日承诺 = **仍未完成**的逾期待办 ∪ 今天完成的。
+    // duePending 必须限定 !done —— 否则历史已完成且未归档的任务
+    // （用户不手动归档是常态）会在次日清晨被 due <= today 收进 scope，
+    // 让用户睁眼就是假 100%（并连带错误触发"今日全部清空"横幅）。见审计 Bug 1。
+    const duePending = !task.done && task.due !== null && task.due <= today;
     const finishedToday = task.done && dateKeyOf(task.completedAt) === today;
-    return dueToday || finishedToday;
+    return duePending || finishedToday;
   });
 
   const activeHabits = habits.filter((habit) => !habit.archived);

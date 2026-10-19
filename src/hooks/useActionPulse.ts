@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { dateKeyOf, todayKey } from "../domain/dates";
 import { activeHabits } from "../domain/habits";
 import type { DailyHabit } from "../domain/types";
@@ -18,12 +18,12 @@ import {
 import { playChime, playSoftReset, playTick, unlockAudio } from "../feedback/chime";
 import { celebrateAllClear, celebrateCombo, celebrateSmall } from "../feedback/confetti";
 import { vibrate } from "../feedback/haptics";
+import { tr } from "../i18n";
 import { allClearQuote, momentumQuote, restartQuote, startQuote } from "../feedback/quotes";
 import { useSystemReduceMotion } from "./useReduceMotion";
 import { useToasts } from "./useToasts";
 import { useNow } from "./useNow";
 import { useToday } from "./useToday";
-import { useEffect } from "react";
 
 /** localStorage 不可用时的内存兜底，保证应用永远能跑。 */
 function memoryStorage(): StorageLike {
@@ -78,9 +78,18 @@ export function useActionPulse(): ActionPulseApi {
   const { toasts, push, dismiss } = useToasts();
   const [beat, setBeat] = useState(0);
 
+  // 持久化。失败（配额满/隐私模式）只提示一次，写入恢复后重置——否则每次
+  // 状态变化都会刷一条 toast。降级本身是刻意设计（内存可用），缺的只是声音（审计 Bug 4）。
+  const storageWarnedRef = useRef(false);
   useEffect(() => {
-    saveState(storageRef, state);
-  }, [storageRef, state]);
+    const result = saveState(storageRef, state);
+    if (!result.ok && !storageWarnedRef.current) {
+      storageWarnedRef.current = true;
+      push(tr("toast.storageFull"), "hot");
+    } else if (result.ok && storageWarnedRef.current) {
+      storageWarnedRef.current = false;
+    }
+  }, [storageRef, state, push]);
 
   const reduceMotion = state.settings.reduceMotion || systemReduceMotion;
   const settings = state.settings;
