@@ -48,6 +48,14 @@ describe("defaults", () => {
     expect(sanitizeSettings({ theme: "system" }).theme).toBe("system");
   });
 
+  it("系统通知开关：默认关闭，仅 true 被保留（审计路线图差距 4）", () => {
+    expect(defaultSettings().notificationsEnabled).toBe(false);
+    expect(sanitizeSettings({}).notificationsEnabled).toBe(false);
+    expect(sanitizeSettings({ notificationsEnabled: true }).notificationsEnabled).toBe(true);
+    expect(sanitizeSettings({ notificationsEnabled: "yes" }).notificationsEnabled).toBe(false);
+    expect(sanitizeSettings({ notificationsEnabled: 1 }).notificationsEnabled).toBe(false);
+  });
+
   it("主题能随备份往返（换设备时保留偏好）", () => {
     const state = defaultState();
     state.settings.theme = "light";

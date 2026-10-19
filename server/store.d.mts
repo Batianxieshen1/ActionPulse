@@ -32,6 +32,8 @@ export interface ServerStore {
   write(baseRev: number, state: unknown): ServerStoreWriteOk | ServerStoreWriteConflict;
   reset(): number;
   file: string;
+  /** 每日滚动快照目录（backups/，保留最近 7 份）。 */
+  backupDir: string;
 }
 
-export function createStore(options: { file: string }): ServerStore;
+export function createStore(options: { file: string; now?: () => number }): ServerStore;

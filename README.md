@@ -167,7 +167,7 @@ The terminal prints a URL containing a pairing token. Open it on your desktop 鈥
 | :--- | :--- |
 | `npm start` | Build + serve everything on port 5273 |
 | `npm run dev` | Vite HMR on 5273 + API on 5274, one command |
-| `npm test` | 332 unit tests |
+| `npm test` | 338 unit tests |
 | `npm run build` | Typecheck + script syntax guard + Vite build |
 | `npm run gen:icons` | Regenerate PWA icons |
 
@@ -233,7 +233,7 @@ React 19 路 TypeScript 路 Vite 8 路 Tailwind CSS 4 路 lucide-react 路 canvas-con
 ## Testing
 
 ```
-tests/            332 unit tests across 22 files (vitest)
+tests/            338 unit tests across 22 files (vitest)
 ```
 
 The suite covers the parts that are actually hard to get right:

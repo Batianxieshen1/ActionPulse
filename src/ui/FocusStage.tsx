@@ -5,7 +5,8 @@ import { isDoneToday } from "../domain/habits";
 import type { DailyHabit, Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { usePomodoro } from "../hooks/usePomodoro";
-import { useT } from "../i18n";
+import { notifyTimerEnd } from "../feedback/notifications";
+import { tr, useT } from "../i18n";
 import { PomodoroRing } from "./PomodoroTimer";
 import { TaskCheck } from "./TaskCheck";
 import { UrgencyBadge } from "./UrgencyBadge";
@@ -13,6 +14,8 @@ import { UrgencyBadge } from "./UrgencyBadge";
 interface SharedProps {
   today: string;
   pomodoroMinutes: number;
+  /** 计时结束且页面在后台时推送系统通知（需用户已授权）。 */
+  notificationsEnabled: boolean;
   onExit: () => void;
   onTimerFinish: () => void;
   /** 结算专注时长，交给上层累计（按日聚合，多端取最大值）。 */
@@ -49,7 +52,7 @@ const KICKSTART_MINUTES = 2;
  * 需要直接调用 \`start(25)\` 临时指定时长，不能让时长走一轮 props 再等渲染。
  */
 export function FocusStage(props: Props) {
-  const { today, pomodoroMinutes, onExit, onTimerFinish, onFocusMinutes } = props;
+  const { today, pomodoroMinutes, onExit, onTimerFinish, onFocusMinutes, notificationsEnabled } = props;
   const t = useT();
   const taskProps = props.kind === "task" ? props : null;
   const habitProps = props.kind === "habit" ? props : null;
@@ -76,6 +79,13 @@ export function FocusStage(props: Props) {
   const onTimerFinishRef = useRef(onTimerFinish);
   onTimerFinishRef.current = onTimerFinish;
 
+  // 通知目标镜像：handleFinish 是空依赖 useCallback（走 ref 模式），
+  // 用 ref 读取"当下的开关与任务标题"，不把它拖进依赖数组。
+  const notifyRef = useRef<{ enabled: boolean; taskTitle: string | null }>({
+    enabled: notificationsEnabled,
+    taskTitle: null,
+  });
+
   const handleFinish = useCallback(() => {
     const snapshot = runRef.current;
     const spent = Math.max(1, Math.round(snapshot.totalMs / 60_000));
@@ -83,6 +93,15 @@ export function FocusStage(props: Props) {
     elapsedRef.current = 0; // 已结算，避免退出时重复计入
     onTimerFinishRef.current();
     if (snapshot.kickstart) setRefillReady(true);
+    // 系统通知：仅有开关时尝试；是否真发由 notifyTimerEnd 内部检查
+    // 「页面是否不可见 + 是否已授权」——页面在前台时音效与 toast 已足够。
+    if (notifyRef.current.enabled) {
+      const { taskTitle } = notifyRef.current;
+      notifyTimerEnd(
+        tr("notify.timerTitle"),
+        taskTitle ? tr("notify.timerBody", { title: taskTitle }) : tr("toast.pomodoroEnd"),
+      );
+    }
   }, []);
 
   const timer = usePomodoro(minutes, handleFinish);
@@ -115,6 +134,8 @@ export function FocusStage(props: Props) {
     }
     return tasks.find((task) => !dismissed.includes(task.id)) ?? null;
   }, [tasks, dismissed, pinnedId]);
+
+  notifyRef.current = { enabled: notificationsEnabled, taskTitle: current?.title ?? null };
 
   const skip = useCallback(() => {
     if (!current) return;

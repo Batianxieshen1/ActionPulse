@@ -86,6 +86,8 @@ export interface Settings {
   soundVolume: number;
   vibrationEnabled: boolean;
   confettiEnabled: boolean;
+  /** 计时结束时页面在后台则推送系统通知（需浏览器授权）。设备本地偏好，不跨端同步。 */
+  notificationsEnabled: boolean;
   encourageEnabled: boolean;
   /** 番茄钟时长（分钟）。 */
   pomodoroMinutes: number;

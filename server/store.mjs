@@ -7,8 +7,8 @@
  *  - 写盘用「临时文件 + rename」，避免断电/崩溃留下半截 JSON。
  *  - 乐观锁：PUT 必须带 baseRev，不匹配就返回 409 + 最新状态，由客户端合并后重试。
  */
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 /**
  * 空状态骨架。**必须与 index.mjs 的 SCHEMA_VERSION 及
@@ -26,8 +26,12 @@ const EMPTY_STATE = {
   daily: { focusMinutes: {}, comboPeak: {} },
 };
 
-export function createStore({ file }) {
+/** 滚动快照保留份数。 */
+const BACKUP_KEEP = 7;
+
+export function createStore({ file, now = () => Date.now() }) {
   let cache = null;
+  const backupDir = join(dirname(file), "backups");
 
   function read() {
     if (cache) return cache;
@@ -43,7 +47,52 @@ export function createStore({ file }) {
     return cache;
   }
 
+  function todayKey() {
+    const d = new Date(now());
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${month}-${day}`;
+  }
+
+  /**
+   * 每日滚动快照（审计路线图差距 6）：当天**第一次**写入之前，把当时的 state.json
+   * 存档为 backups/state-<今日>.json —— 内容是"今天首改前的最后状态"，
+   * 对"手滑点了清空全部任务"这类事故就是一张后悔药。保留最近 BACKUP_KEEP 份。
+   *
+   * "首次"判定：进程内用 lastSnapshotDay 记账；重启后回退到「今日快照文件是否已存在」。
+   * 快照是保险、不是主链路：任何失败都静默放过，绝不影响正常读写。
+   */
+  let lastSnapshotDay = null;
+  function snapshotOncePerDay() {
+    try {
+      const today = todayKey();
+      if (today === lastSnapshotDay) return;
+      lastSnapshotDay = today; // 无论有无内容可存，今天只处理这一次
+      if (existsSync(join(backupDir, `state-${today}.json`))) return; // 重启前已存过
+      if (!existsSync(file)) return; // 首次启动，还没有值得保护的内容
+      mkdirSync(backupDir, { recursive: true });
+      copyFileSync(file, join(backupDir, `state-${today}.json`));
+      pruneBackups();
+    } catch {
+      // 静默：快照失败不配影响主流程
+    }
+  }
+
+  function pruneBackups() {
+    try {
+      const names = readdirSync(backupDir)
+        .filter((name) => /^state-\d{4}-\d{2}-\d{2}\.json$/.test(name))
+        .sort();
+      for (const name of names.slice(0, Math.max(0, names.length - BACKUP_KEEP))) {
+        unlinkSync(join(backupDir, name));
+      }
+    } catch {
+      // 同上
+    }
+  }
+
   function persist(next) {
+    snapshotOncePerDay();
     mkdirSync(dirname(file), { recursive: true });
     const tmp = `${file}.${process.pid}.tmp`;
     writeFileSync(tmp, JSON.stringify(next, null, 2));
@@ -68,5 +117,5 @@ export function createStore({ file }) {
     return next.rev;
   }
 
-  return { read, write, reset, file };
+  return { read, write, reset, file, backupDir };
 }

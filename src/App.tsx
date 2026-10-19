@@ -466,6 +466,7 @@ export default function App() {
           tasks={ordered}
           today={today}
           pomodoroMinutes={state.settings.pomodoroMinutes}
+          notificationsEnabled={state.settings.notificationsEnabled}
           pinnedId={focusIntent.pinnedTaskId}
           onToggle={toggleTask}
           onToggleSubtask={toggleSubtask}
@@ -482,6 +483,7 @@ export default function App() {
           todayDone={focusedHabit ? isDoneToday(focusedHabit, today) : false}
           today={today}
           pomodoroMinutes={state.settings.pomodoroMinutes}
+          notificationsEnabled={state.settings.notificationsEnabled}
           onCompleteHabit={(id) => {
             const habit = state.habits.find((item) => item.id === id);
             if (habit) completeHabit(habit);

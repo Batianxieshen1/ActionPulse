@@ -168,7 +168,7 @@ npm start
 | :--- | :--- |
 | `npm start` | 构建 + 在 5273 端口启动完整服务 |
 | `npm run dev` | Vite 热更新（5273）+ API（5274），一条命令 |
-| `npm test` | 332 个单元测试 |
+| `npm test` | 338 个单元测试 |
 | `npm run build` | 类型检查 + 脚本语法守卫 + Vite 构建 |
 | `npm run gen:icons` | 重新生成 PWA 图标 |
 
@@ -250,7 +250,7 @@ API Key 只存在服务端，界面上只会回显掩码后的形式。
 ## 测试
 
 ```
-tests/            332 个单元测试，22 个文件（vitest）
+tests/            338 个单元测试，22 个文件（vitest）
 ```
 
 覆盖的都是真正容易写错的地方：

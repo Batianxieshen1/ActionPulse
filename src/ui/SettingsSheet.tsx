@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Download, Loader2, Plug, PlugZap, RefreshCw, Trash2, Upload, X } from "lucide-react";
 import { createBackup, parseBackup } from "../domain/validation";
 import type { AppState, Language, Settings, ThemePreference } from "../domain/types";
+import { notificationsSupported } from "../feedback/notifications";
 import type { LlmApi } from "../hooks/useLlmConfig";
 import type { SyncApi } from "../hooks/useSync";
 import { useT } from "../i18n";
@@ -69,6 +70,24 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
   };
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+
+  /** 系统通知开关：打开时必须先拿到浏览器授权，拒绝则说明原因并保持关闭。 */
+  const handleNotificationsToggle = async (value: boolean) => {
+    if (!value) {
+      onPatch({ notificationsEnabled: false });
+      return;
+    }
+    if (!notificationsSupported()) {
+      setMessage({ kind: "error", text: t("settings.notificationsUnsupported") });
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      onPatch({ notificationsEnabled: true });
+    } else {
+      setMessage({ kind: "error", text: t("settings.notificationsDenied") });
+    }
+  };
   const [confirmReset, setConfirmReset] = useState(false);
   const [tokenDraft, setTokenDraft] = useState("");
   const [connectError, setConnectError] = useState<string | null>(null);
@@ -368,6 +387,12 @@ export function SettingsSheet({ state, onPatch, onImport, onReset, onClose, sync
               hint={t("settings.confettiNote")}
               checked={state.settings.confettiEnabled}
               onChange={(value) => onPatch({ confettiEnabled: value })}
+            />
+            <Toggle
+              label={t("settings.notifications")}
+              hint={t("settings.notificationsNote")}
+              checked={state.settings.notificationsEnabled}
+              onChange={(value) => void handleNotificationsToggle(value)}
             />
             <Toggle
               label={t("settings.vibration")}
