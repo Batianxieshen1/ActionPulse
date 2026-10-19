@@ -16,6 +16,13 @@ export type ThemePreference = "system" | "light" | "dark";
 export type Language = "zh" | "en";
 
 /**
+ * 习惯日程（v2.4 / 审计路线图差距 2 的采纳路径）。
+ * 刻意是**规则而非生成实例**：到期与否从 today 派生，
+ * 不产生任何需要跨端同步的「今日任务实例」，完成记录仍是 G-Set。
+ */
+export type HabitSchedule = "daily" | "weekdays" | "weekly";
+
+/**
  * 每日习惯 / 日常仪式（v2.1 模块一）。
  * 与 Task 分开是因为：Task 带 due 会产生超期压力，而习惯的本质是「每天重来」。
  * \`completedDates\` 是 G-Set（只增集合），两端合并取并集 —— 天然无冲突。
@@ -24,6 +31,10 @@ export interface DailyHabit {
   id: string;
   title: string;
   emoji: string;
+  /** 日程规则。旧备份缺失时 sanitize 补 "daily"。 */
+  schedule: HabitSchedule;
+  /** schedule === "weekly" 的目标星期（0=周日 … 6=周六）；其他日程为 null。 */
+  scheduleDay: number | null;
   /** 打勾过的本地日期键（YYYY-MM-DD）。 */
   completedDates: string[];
   archived: boolean;

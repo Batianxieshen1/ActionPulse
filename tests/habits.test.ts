@@ -6,7 +6,9 @@ import {
   createHabit,
   habitStreak,
   habitsCompletion,
+  habitSignature,
   isDoneToday,
+  isHabitDueToday,
   mergeHabits,
   nextUncompletedHabit,
   sameHabits,
@@ -21,6 +23,8 @@ function habit(patch: Partial<DailyHabit> & { id: string }): DailyHabit {
   return {
     title: "喝水",
     emoji: DEFAULT_HABIT_EMOJI,
+    schedule: "daily",
+    scheduleDay: null,
     completedDates: [],
     archived: false,
     createdAt: T0,
@@ -227,5 +231,60 @@ describe("达成率与连续天数", () => {
     const h = habit({ id: "a", completedDates: ["2026-10-06", "2026-10-07", "2026-10-08"] });
     expect(habitStreak(h, TODAY)).toBe(3);
     expect(habitStreak(habit({ id: "b" }), TODAY)).toBe(0);
+  });
+});
+
+describe("日程规则（Phase 3：派生式周期习惯）", () => {
+  // 2026-10-08 是周四；2026-10-10 是周六
+
+  it("daily 每天都到期", () => {
+    expect(isHabitDueToday(habit({ id: "a" }), TODAY)).toBe(true);
+    expect(isHabitDueToday(habit({ id: "a" }), "2026-10-10")).toBe(true);
+  });
+
+  it("weekdays 只在周一至周五到期", () => {
+    const h = habit({ id: "a", schedule: "weekdays" });
+    expect(isHabitDueToday(h, TODAY)).toBe(true); // 周四
+    expect(isHabitDueToday(h, "2026-10-10")).toBe(false); // 周六
+  });
+
+  it("weekly 只在目标星期到期", () => {
+    const h = habit({ id: "a", schedule: "weekly", scheduleDay: 6 });
+    expect(isHabitDueToday(h, "2026-10-10")).toBe(true); // 周六
+    expect(isHabitDueToday(h, TODAY)).toBe(false); // 周四
+  });
+
+  it("完成率分母只算今天到期的习惯（周习惯在非目标日不计承诺）", () => {
+    const habits = [
+      habit({ id: "d", completedDates: [TODAY] }),
+      habit({ id: "w", schedule: "weekly", scheduleDay: 6 }),
+    ];
+    expect(habitsCompletion(habits, TODAY)).toEqual({ done: 1, total: 1, percent: 100 });
+  });
+
+  it("nextUncompletedHabit 跳过今天不到期的习惯", () => {
+    const habits = [habit({ id: "w", title: "周报", schedule: "weekly", scheduleDay: 6 })];
+    expect(nextUncompletedHabit(habits, TODAY)).toBeNull();
+    expect(nextUncompletedHabit(habits, "2026-10-10")?.id).toBe("w");
+  });
+
+  it("合并：完成日期并集不受影响，日程等标量取较新一方", () => {
+    const local = habit({ id: "h", schedule: "daily", completedDates: ["2026-10-07"], updatedAt: T0 });
+    const remote = habit({
+      id: "h",
+      schedule: "weekdays",
+      completedDates: ["2026-10-08"],
+      updatedAt: T0 + 100,
+    });
+    const [merged] = mergeHabits([local], [remote]);
+    expect(merged.completedDates).toEqual(["2026-10-07", "2026-10-08"]);
+    expect(merged.schedule).toBe("weekdays");
+  });
+
+  it("签名包含日程：只改日程也必须被判定为变化（防同步静默丢弃）", () => {
+    const daily = habit({ id: "h" });
+    const weekly = { ...daily, schedule: "weekly" as const, scheduleDay: 6 };
+    expect(habitSignature(daily)).not.toBe(habitSignature(weekly));
+    expect(sameHabits([daily], [weekly])).toBe(false);
   });
 });

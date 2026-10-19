@@ -6,6 +6,7 @@ import {
   defaultSettings,
   defaultState,
   parseBackup,
+  sanitizeHabit,
   sanitizeSettings,
   sanitizeTask,
 } from "../src/domain/validation";
@@ -63,6 +64,31 @@ describe("defaults", () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(parsed.state.settings.theme).toBe("light");
+  });
+});
+
+describe("sanitizeHabit — 日程规则（Phase 3）", () => {
+  it("旧备份缺 schedule 时平滑迁移为 daily", () => {
+    const legacy = sanitizeHabit({ title: "喝水" });
+    expect(legacy?.schedule).toBe("daily");
+    expect(legacy?.scheduleDay).toBeNull();
+  });
+
+  it("非法日程回落到 daily，非法 weekly 日回落到创建日", () => {
+    expect(sanitizeHabit({ title: "喝水", schedule: "monthly" })?.schedule).toBe("daily");
+    const weekly = sanitizeHabit({
+      title: "周报",
+      schedule: "weekly",
+      scheduleDay: 99,
+      createdAt: "2026-10-08T09:00:00.000Z",
+    });
+    expect(weekly?.schedule).toBe("weekly");
+    expect(weekly?.scheduleDay).toBe(new Date("2026-10-08T09:00:00.000Z").getDay());
+  });
+
+  it("weekdays 的 scheduleDay 一律归 null；weekly 保留合法目标日", () => {
+    expect(sanitizeHabit({ title: "打卡", schedule: "weekdays", scheduleDay: 3 })?.scheduleDay).toBeNull();
+    expect(sanitizeHabit({ title: "周报", schedule: "weekly", scheduleDay: 5 })?.scheduleDay).toBe(5);
   });
 });
 

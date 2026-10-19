@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { dateKeyOf, todayKey } from "../domain/dates";
 import { activeHabits } from "../domain/habits";
-import type { DailyHabit } from "../domain/types";
+import type { DailyHabit, HabitSchedule } from "../domain/types";
 import { nextCombo } from "../domain/streak";
 import { defaultState } from "../domain/validation";
 import type { Task } from "../domain/types";
@@ -49,7 +49,7 @@ export interface ActionPulseApi {
   dismissToast: (id: string) => void;
   pushToast: (text: string, tone?: "normal" | "hot" | "info") => void;
   toggleTask: (task: Task, origin?: { x: number; y: number }) => void;
-  addHabit: (title: string, emoji?: string) => void;
+  addHabit: (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => void;
   toggleHabit: (habit: DailyHabit, origin?: { x: number; y: number }) => void;
   completeHabit: (habit: DailyHabit) => void;
   archiveHabit: (id: string) => void;
@@ -147,8 +147,8 @@ export function useActionPulse(): ActionPulseApi {
   );
 
   const addHabit = useCallback(
-    (title: string, emoji?: string) => {
-      dispatch({ type: "habit/add", title, emoji, now: Date.now() });
+    (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => {
+      dispatch({ type: "habit/add", title, emoji, schedule, scheduleDay, now: Date.now() });
     },
     [dispatch],
   );

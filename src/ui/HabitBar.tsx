@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Play, Plus, Target, X } from "lucide-react";
-import { habitsCompletion, isDoneToday, nextUncompletedHabit } from "../domain/habits";
-import type { DailyHabit } from "../domain/types";
+import { habitsCompletion, isDoneToday, isHabitDueToday, nextUncompletedHabit } from "../domain/habits";
+import type { DailyHabit, HabitSchedule } from "../domain/types";
 import { useT } from "../i18n";
 
 interface Props {
   habits: DailyHabit[];
   archived: DailyHabit[];
   today: string;
-  onAdd: (title: string, emoji?: string) => void;
+  onAdd: (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => void;
   onToggle: (habit: DailyHabit) => void;
   onFocusHabit: (habit: DailyHabit) => void;
   onArchive: (id: string) => void;
@@ -16,6 +16,8 @@ interface Props {
 }
 
 const EMOJI_PRESETS = ["⚡", "💧", "🏃", "📖", "🧘", "🌙"];
+/** 0=周日 … 6=周六，与 Date#getDay 对齐。 */
+const WEEKDAY_KEYS = ["weekday.0", "weekday.1", "weekday.2", "weekday.3", "weekday.4", "weekday.5", "weekday.6"] as const;
 
 /** 全部完成之后，先让"打勾"这个动作被看见，再收拢 —— 立刻收起会有"我点的东西消失了"的失落感。 */
 const COLLAPSE_DELAY_MS = 1500;
@@ -33,6 +35,8 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
   const [emoji, setEmoji] = useState(EMOJI_PRESETS[0]);
+  const [schedule, setSchedule] = useState<HabitSchedule>("daily");
+  const [scheduleDay, setScheduleDay] = useState<number>(() => new Date().getDay());
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -49,12 +53,14 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
   const submitHabit = () => {
     const title = draft.trim();
     if (title.length === 0) return;
-    onAdd(title, emoji);
+    onAdd(title, emoji, schedule, schedule === "weekly" ? scheduleDay : null);
     setDraft("");
     setAdding(false);
   };
 
-  if (completion.total === 0 && !adding && !open) {
+  // 没有任何活动习惯时才收成一个"添加"按钮；有周习惯但今天不到期时，
+  // 仍应保留整行（0/0）让用户找得到它。
+  if (habits.length === 0 && !adding && !open) {
     return (
       <button
         type="button"
@@ -149,7 +155,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
               );
             }
             return (
-              <span key={habit.id} className="ap-pill" data-done={done}>
+              <span key={habit.id} className="ap-pill" data-done={done} data-off={isHabitDueToday(habit, today) ? undefined : "true"} title={isHabitDueToday(habit, today) ? undefined : t("habit.notToday")}>
                 <button
                   type="button"
                   className="flex items-center gap-1.5"
@@ -159,6 +165,13 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 >
                   <span aria-hidden="true">{habit.emoji}</span>
                   {habit.title}
+                  {habit.schedule !== "daily" ? (
+                    <span className="ap-label">
+                      {habit.schedule === "weekdays"
+                        ? t("habit.scheduleWeekdays")
+                        : t(WEEKDAY_KEYS[habit.scheduleDay ?? 0])}
+                    </span>
+                  ) : null}
                 </button>
                 {!done ? (
                   <button
@@ -219,6 +232,33 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                   }
                 }}
               />
+              {/* 日程：每天 / 工作日 / 每周某天。规则派生，不生成任务实例。 */}
+              <select
+                className="ap-select"
+                style={{ padding: "1px 4px", fontSize: "var(--fs-sm)", border: "none", background: "transparent" }}
+                value={schedule}
+                onChange={(event) => setSchedule(event.target.value as HabitSchedule)}
+                aria-label={t("habit.schedule")}
+              >
+                <option value="daily">{t("habit.scheduleDaily")}</option>
+                <option value="weekdays">{t("habit.scheduleWeekdays")}</option>
+                <option value="weekly">{t("habit.scheduleWeekly")}</option>
+              </select>
+              {schedule === "weekly" ? (
+                <select
+                  className="ap-select"
+                  style={{ padding: "1px 4px", fontSize: "var(--fs-sm)", border: "none", background: "transparent" }}
+                  value={scheduleDay}
+                  onChange={(event) => setScheduleDay(Number(event.target.value))}
+                  aria-label={t("habit.scheduleDay")}
+                >
+                  {WEEKDAY_KEYS.map((key, day) => (
+                    <option key={key} value={day}>
+                      {t(key)}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
               <button type="button" className="ap-icon-btn" style={{ width: 20, height: 20 }} aria-label={t("habit.addConfirm")} onClick={submitHabit}>
                 <Check size={12} />
               </button>

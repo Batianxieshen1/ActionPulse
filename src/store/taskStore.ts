@@ -19,6 +19,7 @@ import type {
   AppState,
   DailyHabit,
   EnergySnapshot,
+  HabitSchedule,
   Importance,
   PriorityMode,
   Quadrant,
@@ -53,7 +54,7 @@ export type Action =
   | { type: "subtask/remove"; taskId: string; subId: string }
   | { type: "subtask/toggle"; taskId: string; subId: string; now: number }
   | { type: "subtask/set"; taskId: string; titles: string[] }
-  | { type: "habit/add"; title: string; emoji?: string; now: number }
+  | { type: "habit/add"; title: string; emoji?: string; schedule?: HabitSchedule; scheduleDay?: number | null; now: number }
   | { type: "habit/toggle"; id: string; now: number }
   | { type: "habit/complete"; id: string; now: number }
   | { type: "habit/update"; id: string; patch: { title?: string; emoji?: string } }
@@ -249,7 +250,16 @@ export function reducer(state: AppState, action: Action): AppState {
     case "habit/add": {
       const title = action.title.trim();
       if (title.length === 0) return state;
-      return { ...state, habits: [...state.habits, createHabit({ title, emoji: action.emoji }, action.now)] };
+      return {
+        ...state,
+        habits: [
+          ...state.habits,
+          createHabit(
+            { title, emoji: action.emoji, schedule: action.schedule, scheduleDay: action.scheduleDay },
+            action.now,
+          ),
+        ],
+      };
     }
 
     case "habit/toggle": {

@@ -140,4 +140,20 @@ describe("todayEnergy", () => {
     const todayPending = makeTask({ id: "new", due: TODAY });
     expect(todayEnergy([yesterdayDone, todayPending], [], TODAY)).toEqual({ done: 0, total: 1, percent: 0 });
   });
+
+  it("习惯按日程计入能量槽：工作日习惯在周末不算今日承诺（Phase 3）", () => {
+    const weekdayHabit = {
+      id: "h",
+      title: "打卡",
+      emoji: "⚡",
+      schedule: "weekdays" as const,
+      scheduleDay: null,
+      completedDates: [],
+      archived: false,
+      createdAt: NOW,
+      updatedAt: NOW,
+    };
+    expect(todayEnergy([], [weekdayHabit], "2026-10-10")).toEqual({ done: 0, total: 0, percent: 0 });
+    expect(todayEnergy([], [weekdayHabit], TODAY)).toEqual({ done: 0, total: 1, percent: 0 });
+  });
 });

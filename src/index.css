@@ -1139,3 +1139,9 @@ select {
 .ap-quote-swap {
   animation: ap-fade 900ms ease both;
 }
+
+/* Phase 3：非今日到期的习惯（工作日习惯在周末等）降噪但保留可见——
+   藏起来会让用户找不到它；变淡 + title 提示"今天不是它的日子"是更诚实的选择。 */
+.ap-pill[data-off="true"] {
+  opacity: 0.55;
+}

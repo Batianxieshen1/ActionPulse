@@ -11,6 +11,8 @@ function habit(patch: Partial<DailyHabit> & { id: string }): DailyHabit {
   return {
     title: "喝水",
     emoji: "⚡",
+    schedule: "daily",
+    scheduleDay: null,
     completedDates: [],
     archived: false,
     createdAt: NOW,

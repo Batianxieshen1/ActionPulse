@@ -37,6 +37,6 @@ A fourth, smaller one: a React `key` collision in the daily debrief that product
 Every claim in these documents is backed by a command you can run yourself:
 
 ```bash
-npm test        # 338 unit tests
+npm test        # 349 unit tests
 npm run build   # typecheck + script syntax guard + build
 ```

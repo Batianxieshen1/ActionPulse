@@ -9,6 +9,7 @@
  *    注意：无截止时间的新任务**不会**稀释能量槽，否则「新建任务」会变成负反馈。
  */
 import { addDays, dateKeyOf, toDateKey } from "./dates";
+import { isHabitDueToday } from "./schedule";
 import type { DailyHabit, EnergySnapshot, Task } from "./types";
 
 /** 冲刺中断阈值：45 分钟。 */
@@ -60,7 +61,7 @@ export function todayEnergy(
     return duePending || finishedToday;
   });
 
-  const activeHabits = habits.filter((habit) => !habit.archived);
+  const activeHabits = habits.filter((habit) => !habit.archived && isHabitDueToday(habit, today));
 
   const done =
     scope.filter((task) => task.done).length +

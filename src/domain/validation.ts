@@ -145,11 +145,22 @@ export function sanitizeHabit(raw: unknown, now: Date = new Date()): DailyHabit 
   if (title.length === 0) return null;
 
   const createdAt = normalizeStamp(raw.createdAt, now.toISOString());
+  const schedule =
+    raw.schedule === "weekdays" || raw.schedule === "weekly" ? raw.schedule : "daily";
+  const rawDay = Number.isInteger(raw.scheduleDay) ? (raw.scheduleDay as number) : null;
   return {
     id: typeof raw.id === "string" && raw.id.trim().length > 0 ? raw.id : createId("habit"),
     title,
     emoji:
       typeof raw.emoji === "string" && raw.emoji.trim().length > 0 ? raw.emoji.trim() : DEFAULT_HABIT_EMOJI,
+    schedule,
+    // weekly 缺合法目标日时取创建日，保证行为确定；其他日程一律 null
+    scheduleDay:
+      schedule === "weekly"
+        ? rawDay !== null && rawDay >= 0 && rawDay <= 6
+          ? rawDay
+          : new Date(createdAt).getDay()
+        : null,
     completedDates: Array.isArray(raw.completedDates)
       ? [...new Set(raw.completedDates.filter((date) => isValidDateKey(date)))].sort()
       : [],

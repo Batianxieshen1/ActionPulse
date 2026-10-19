@@ -15,23 +15,35 @@
  * 跨天归零是**派生**的（\`isDoneToday\` 按 today 计算），因此不需要任何定时器或状态重置。
  */
 import { createId } from "./id";
+import { isHabitDueToday } from "./schedule";
 import { streakDays } from "./streak";
-import type { DailyHabit, EnergySnapshot } from "./types";
+import type { DailyHabit, EnergySnapshot, HabitSchedule } from "./types";
 
 export type { DailyHabit };
+export { isHabitDueToday };
 
 export const DEFAULT_HABIT_EMOJI = "⚡";
 
 export interface HabitDraft {
   title: string;
   emoji?: string;
+  schedule?: HabitSchedule;
+  scheduleDay?: number | null;
+}
+
+function clampWeekday(value: number): number {
+  return Number.isInteger(value) && value >= 0 && value <= 6 ? value : 0;
 }
 
 export function createHabit(draft: HabitDraft, now: number = Date.now()): DailyHabit {
+  const schedule = draft.schedule ?? "daily";
   return {
     id: createId("habit"),
     title: draft.title.trim(),
     emoji: draft.emoji?.trim() || DEFAULT_HABIT_EMOJI,
+    schedule,
+    // weekly 未指定目标日时默认"创建日的那一天"——先有确定行为，用户想改可重建
+    scheduleDay: schedule === "weekly" ? clampWeekday(draft.scheduleDay ?? new Date(now).getDay()) : null,
     completedDates: [],
     archived: false,
     createdAt: now,
@@ -63,12 +75,16 @@ export function completeHabitDate(habit: DailyHabit, today: string, now: number)
   };
 }
 
-/** 按当前习惯顺序选择第一个今天尚未完成的活动习惯。 */
+/** 按当前习惯顺序选择第一个今天到期且尚未完成的活动习惯。 */
 export function nextUncompletedHabit(habits: readonly DailyHabit[], today: string): DailyHabit | null {
-  return habits.find((habit) => !habit.archived && !isDoneToday(habit, today)) ?? null;
+  return (
+    habits.find(
+      (habit) => !habit.archived && isHabitDueToday(habit, today) && !isDoneToday(habit, today),
+    ) ?? null
+  );
 }
 
-/** 完成日期取并集；标量字段按 updatedAt 取新。 */
+/** 完成日期取并集；标量字段（含日程）按 updatedAt 取新。 */
 function mergeHabit(a: DailyHabit, b: DailyHabit): DailyHabit {
   const completedDates = [...new Set([...a.completedDates, ...b.completedDates])].sort();
 
@@ -87,6 +103,8 @@ function mergeHabit(a: DailyHabit, b: DailyHabit): DailyHabit {
     title: winner.title,
     emoji: winner.emoji,
     archived: winner.archived,
+    schedule: winner.schedule,
+    scheduleDay: winner.scheduleDay,
     createdAt: Math.min(a.createdAt, b.createdAt),
     updatedAt: Math.max(a.updatedAt, b.updatedAt),
     completedDates,
@@ -105,7 +123,7 @@ export function mergeHabits(local: readonly DailyHabit[], remote: readonly Daily
   );
 }
 
-/** 内容签名，用于「有没有变化」的判定。日期必须参与比较，否则并集改动会被漏判。 */
+/** 内容签名，用于「有没有变化」的判定。日期与日程都必须参与比较，否则改动会被漏判。 */
 export function habitSignature(habit: DailyHabit): string {
   return [
     habit.id,
@@ -113,6 +131,8 @@ export function habitSignature(habit: DailyHabit): string {
     habit.archived ? "1" : "0",
     habit.title,
     habit.emoji,
+    habit.schedule,
+    habit.scheduleDay === null ? "-" : String(habit.scheduleDay),
     habit.completedDates.join(","),
   ].join("|");
 }
@@ -128,9 +148,9 @@ export function activeHabits(habits: readonly DailyHabit[]): DailyHabit[] {
   return habits.filter((habit) => !habit.archived);
 }
 
-/** 习惯达成率（模块四的战报要用）。 */
+/** 习惯达成率（模块四的战报要用）。分母只算**今天到期**的习惯——周习惯在非目标日不是承诺。 */
 export function habitsCompletion(habits: readonly DailyHabit[], today: string): EnergySnapshot {
-  const active = activeHabits(habits);
+  const active = activeHabits(habits).filter((habit) => isHabitDueToday(habit, today));
   const done = active.filter((habit) => isDoneToday(habit, today)).length;
   const total = active.length;
   return { done, total, percent: total === 0 ? 0 : Math.min(100, Math.round((done / total) * 100)) };

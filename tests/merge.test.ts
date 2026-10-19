@@ -171,6 +171,8 @@ describe("mergeStates — 习惯（G-Set 并集）与日指标", () => {
     id,
     title: "喝水",
     emoji: "⚡",
+    schedule: "daily" as const,
+    scheduleDay: null,
     completedDates: dates,
     archived: false,
     createdAt: T0,
