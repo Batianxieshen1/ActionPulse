@@ -4,10 +4,10 @@
  * 纯函数：给定 state 与 today，产出数字与一段可复制的 Markdown。
  * 刻意**不读时钟、不读随机数** —— 战报是要被复制出去的文本，必须可复现。
  */
-import { dateKeyOf, daysBetween } from "./dates";
+import { addDays, dateKeyOf, daysBetween } from "./dates";
 import { habitsCompletion } from "./habits";
 import { streakDays } from "./streak";
-import type { AppState, Task } from "./types";
+import type { AppState, DailyHabit, Task } from "./types";
 
 export interface DebriefStats {
   today: string;
@@ -39,6 +39,30 @@ export interface EstimateMix {
   total: number;
   /** 速赢占比（0~100 整数）；total 为 0 时为 0，不产生 NaN。 */
   quickPercent: number;
+}
+
+export interface DayActivity {
+  day: string;
+  /** 当天完成数 = 已完成任务 + 习惯打勾。 */
+  count: number;
+  isToday: boolean;
+}
+
+/** 近 7 天（含今天）每日完成数：周能量图的数据源（Wave 2 / L2 成长可视化）。
+ *  全部从既有记录派生，零新增存储。 */
+export function weekActivity(
+  tasks: readonly Task[],
+  habits: readonly DailyHabit[],
+  today: string,
+): DayActivity[] {
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = addDays(today, index - 6);
+    const taskCount = tasks.filter(
+      (task) => task.done && !task.archived && dateKeyOf(task.completedAt) === day,
+    ).length;
+    const habitCount = habits.filter((habit) => habit.completedDates.includes(day)).length;
+    return { day, count: taskCount + habitCount, isToday: day === today };
+  });
 }
 
 /**

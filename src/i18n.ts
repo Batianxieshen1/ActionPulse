@@ -158,6 +158,7 @@ const zh = {
   "stage.stats.streak": "连续天数",
   "stage.stats.combo": "当前连击",
   "stage.stats.total": "累计完成",
+  "stage.week": "近 7 天",
 
   // ---------- 聚焦模式 ----------
   "focus.title": "聚焦当下",
@@ -587,6 +588,7 @@ const en: Record<TKey, string> = {
   "stage.stats.streak": "Day streak",
   "stage.stats.combo": "Current combo",
   "stage.stats.total": "Total done",
+  "stage.week": "Last 7 days",
 
   "focus.title": "Focus",
   "focus.onlyOne": "only this one",
@@ -878,6 +880,9 @@ const en: Record<TKey, string> = {
 };
 
 const DICTS: Record<Lang, Record<TKey, string>> = { zh, en };
+
+/** 0=周日 … 6=周六 的文案键（与 Date#getDay 对齐），周能量图/习惯日程共用。 */
+export const WEEKDAY_KEYS = ["weekday.0", "weekday.1", "weekday.2", "weekday.3", "weekday.4", "weekday.5", "weekday.6"] as const;
 
 /* ------------------------------ 语言状态（模块级单例） ------------------------------ */
 

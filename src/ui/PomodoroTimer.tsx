@@ -43,7 +43,13 @@ export function PomodoroRing({ timer, label, size = 148, disabled = false }: Pro
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={timer.status === "finished" ? "var(--tier-high)" : "var(--pulse)"}
+            stroke={
+              timer.status === "finished"
+                ? "var(--tier-high)"
+                : timer.status === "running" && timer.remainingMs <= 10_000
+                  ? "var(--accent-gradient-end)"
+                  : "var(--pulse)"
+            }
             strokeWidth={5}
             strokeLinecap="round"
             strokeDasharray={`${dash} ${circumference}`}

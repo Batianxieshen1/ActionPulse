@@ -1,22 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Moon, Target } from "lucide-react";
-import { daysBetween } from "../domain/dates";
-import type { Task } from "../domain/types";
+import { daysBetween, fromDateKey } from "../domain/dates";
+import { weekActivity } from "../domain/debrief";
+import type { DailyHabit, Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
 import { idleQuote } from "../feedback/quotes";
-import { useT } from "../i18n";
+import { useCountUp } from "../hooks/useCountUp";
+import { WEEKDAY_KEYS, useT, type TKey } from "../i18n";
 import { PulseLine } from "./PulseLine";
 import { UrgencyBadge } from "./UrgencyBadge";
 
 interface Props {
   focus: Task | null;
   upcoming: Task[];
+  /** 全量任务（含已完成）：周能量条按 completedAt 派生每日完成数。 */
+  tasks: Task[];
   today: string;
   beat: number;
   energy: { done: number; total: number; percent: number };
   streak: number;
   combo: number;
   totalCompleted: number;
+  habits: DailyHabit[];
+  reduceMotion: boolean;
   onEnterFocus: () => void;
   /** 「紧随其后」点某一条直接聚焦它 —— 复用盲盒的 pinnedTaskId 机制。 */
   onFocusTask: (taskId: string) => void;
@@ -33,12 +39,15 @@ const QUOTE_INTERVAL_MS = 9000;
 export function IdleStage({
   focus,
   upcoming,
+  tasks,
   today,
   beat,
   energy,
   streak,
   combo,
   totalCompleted,
+  habits,
+  reduceMotion,
   onEnterFocus,
   onFocusTask,
   onToggle,
@@ -53,6 +62,15 @@ export function IdleStage({
   }, []);
   const quote = idleQuote(energy.percent, streak, Date.now() + quoteSeed * 1000);
 
+  // Wave 2：能量数字滚动；周活动条把"积累"画到台面上（全部从既有记录派生）
+  const shownPercent = useCountUp(energy.percent, { disabled: reduceMotion });
+  const week = useMemo(() => weekActivity(tasks, habits, today), [tasks, habits, today]);
+  const weekMax = Math.max(...week.map((entry) => entry.count), 1);
+  const weekBars = week.map((entry) => ({
+    ...entry,
+    label: t(WEEKDAY_KEYS[fromDateKey(entry.day).getDay()] as TKey),
+  }));
+
   const ring = 168;
   const radius = ring / 2 - 8;
   const circumference = 2 * Math.PI * radius;
@@ -66,7 +84,7 @@ export function IdleStage({
 
   return (
     <div className="flex w-full max-w-[820px] flex-col items-center gap-9">
-      <PulseLine beat={beat} height={64} />
+      <PulseLine beat={beat} height={64} amplitude={1 + Math.min(0.6, streak * 0.08)} />
 
       <div className="flex items-center gap-12">
         <div className="relative" style={{ width: ring, height: ring }}>
@@ -85,7 +103,7 @@ export function IdleStage({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="ap-mono ap-t-2xl leading-none font-semibold">{energy.percent}</span>
+            <span className="ap-mono ap-t-2xl leading-none font-semibold">{shownPercent}</span>
             <span className="ap-label mt-1">{t("stage.energyPercent")}</span>
           </div>
         </div>
@@ -98,6 +116,20 @@ export function IdleStage({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Wave 2：近 7 天能量条——把"积累"画到台面上。全部从既有记录派生，零新增存储。 */}
+      <div className="ap-week" role="img" aria-label={t("stage.week")}>
+        {weekBars.map((entry) => (
+          <div key={entry.day} className="ap-week__col" data-today={entry.isToday ? "true" : undefined}>
+            <span className="ap-week__count ap-mono ap-t-2xs">{entry.count > 0 ? entry.count : ""}</span>
+            <span
+              className="ap-week__bar"
+              style={{ height: `${Math.max(6, Math.round((entry.count / weekMax) * 100))}%` }}
+            />
+            <span className="ap-week__label">{entry.label}</span>
+          </div>
+        ))}
       </div>
 
       {focus ? (

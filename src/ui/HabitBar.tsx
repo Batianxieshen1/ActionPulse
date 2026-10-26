@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Play, Plus, Target, X } from "lucide-react";
 import { habitsCompletion, isDoneToday, isHabitDueToday, nextUncompletedHabit } from "../domain/habits";
 import type { DailyHabit, HabitSchedule } from "../domain/types";
-import { useT } from "../i18n";
+import { WEEKDAY_KEYS, useT } from "../i18n";
 
 interface Props {
   habits: DailyHabit[];
@@ -16,8 +16,6 @@ interface Props {
 }
 
 const EMOJI_PRESETS = ["⚡", "💧", "🏃", "📖", "🧘", "🌙"];
-/** 0=周日 … 6=周六，与 Date#getDay 对齐。 */
-const WEEKDAY_KEYS = ["weekday.0", "weekday.1", "weekday.2", "weekday.3", "weekday.4", "weekday.5", "weekday.6"] as const;
 
 /** 全部完成之后，先让"打勾"这个动作被看见，再收拢 —— 立刻收起会有"我点的东西消失了"的失落感。 */
 const COLLAPSE_DELAY_MS = 1500;

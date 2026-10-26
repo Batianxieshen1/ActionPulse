@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { breakdownWithFallback } from "./domain/aiBreakdown";
 import { streakDays } from "./domain/streak";
 import type { AppState, DailyHabit, Quadrant, Settings, Task } from "./domain/types";
@@ -147,6 +148,70 @@ export default function App() {
   const patchSettings = useCallback(
     (patch: Partial<Settings>) => dispatch({ type: "settings/patch", patch }),
     [dispatch],
+  );
+
+  // 记录最后一次按下的位置：主题圆形扩散从用户的指尖展开
+  const lastPointerRef = useRef({ x: 0.5, y: 0.5 });
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      lastPointerRef.current = {
+        x: event.clientX / window.innerWidth,
+        y: event.clientY / window.innerHeight,
+      };
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, []);
+
+  /** 主题切换走 View Transition 圆形扩散；其余设置原样。
+   *  reduce-motion 或不支持的浏览器（Firefox 旧版）直接生效，无动画无害。 */
+  const patchSettingsFx = useCallback(
+    (patch: Partial<Settings>) => {
+      if (patch.theme === undefined || reduceMotion || typeof document.startViewTransition !== "function") {
+        patchSettings(patch);
+        return;
+      }
+      const { x, y } = lastPointerRef.current;
+      document.documentElement.style.setProperty("--vt-x", `${(x * 100).toFixed(1)}%`);
+      document.documentElement.style.setProperty("--vt-y", `${(y * 100).toFixed(1)}%`);
+      document.startViewTransition(() => {
+        flushSync(() => patchSettings(patch));
+      });
+    },
+    [patchSettings, reduceMotion],
+  );
+
+  /** View Transition 包装：排序/增删的变化被看见——紧迫度算法第一次肉眼可见。
+   *  reduce-motion 或不支持的浏览器直接更新（退化为瞬移，无害）。 */
+  const withViewTransition = useCallback(
+    (update: () => void) => {
+      if (reduceMotion || typeof document.startViewTransition !== "function") {
+        update();
+        return;
+      }
+      document.startViewTransition(() => {
+        flushSync(update);
+      });
+    },
+    [reduceMotion],
+  );
+
+  /** 只对会影响排序的字段走 VT——备注等逐键更新不走（否则每键一次快照）。 */
+  const updateTaskFx = useCallback(
+    (id: string, patch: Partial<Task>) => {
+      const touchesOrder = ["due", "importance", "estimateMinutes"].some((key) => key in patch);
+      if (touchesOrder) withViewTransition(() => updateTask(id, patch));
+      else updateTask(id, patch);
+    },
+    [withViewTransition, updateTask],
+  );
+  const toggleTaskFx = useCallback(
+    (task: Task, origin?: { x: number; y: number }) => withViewTransition(() => toggleTask(task, origin)),
+    [withViewTransition, toggleTask],
+  );
+  const removeTaskFx = useCallback(
+    (id: string) => withViewTransition(() => removeTask(id)),
+    [withViewTransition, removeTask],
   );
 
   const setSubtasks = useCallback(
@@ -390,13 +455,13 @@ export default function App() {
             <QuadrantBoard
               buckets={buckets}
               today={today}
-              onToggle={toggleTask}
+              onToggle={toggleTaskFx}
               onToggleSubtask={toggleSubtask}
               onSetSubtasks={setSubtasks}
               onBreakdown={handleBreakdown}
               breakingDownId={breakingDownId}
-              onUpdate={updateTask}
-              onRemove={removeTask}
+              onUpdate={updateTaskFx}
+              onRemove={removeTaskFx}
               onSetQuadrant={setQuadrant}
             />
           ) : (
@@ -406,20 +471,20 @@ export default function App() {
               manual={false}
               showDemo={state.stats.totalCompleted < 3}
               onDemoToggle={demoCelebrate}
-              onToggle={toggleTask}
+              onToggle={toggleTaskFx}
               onToggleSubtask={toggleSubtask}
               onSetSubtasks={setSubtasks}
               onBreakdown={handleBreakdown}
               breakingDownId={breakingDownId}
-              onUpdate={updateTask}
-              onRemove={removeTask}
+              onUpdate={updateTaskFx}
+              onRemove={removeTaskFx}
               onMove={moveTask}
             />
           )}
 
           <CompletedSection
             tasks={completed}
-            onToggle={toggleTask}
+            onToggle={toggleTaskFx}
             onArchiveAll={() => dispatch({ type: "task/archiveCompleted" })}
             reduceMotion={reduceMotion}
           />
@@ -445,15 +510,18 @@ export default function App() {
           <IdleStage
             focus={currentFocus}
             upcoming={upcoming}
+            tasks={state.tasks}
             today={today}
             beat={beat}
             energy={energySnapshot}
             streak={streak}
             combo={state.stats.combo}
             totalCompleted={state.stats.totalCompleted}
+            habits={state.habits}
+            reduceMotion={reduceMotion}
             onEnterFocus={enterFocus}
             onFocusTask={(taskId) => setFocusIntent({ kind: "task", pinnedTaskId: taskId })}
-            onToggle={toggleTask}
+            onToggle={toggleTaskFx}
           />
         </main>
       ) : null}
@@ -468,7 +536,7 @@ export default function App() {
           pomodoroMinutes={state.settings.pomodoroMinutes}
           notificationsEnabled={state.settings.notificationsEnabled}
           pinnedId={focusIntent.pinnedTaskId}
-          onToggle={toggleTask}
+          onToggle={toggleTaskFx}
           onToggleSubtask={toggleSubtask}
           onBreakdown={handleBreakdown}
           breakingDown={breakingDownId !== null}
@@ -499,7 +567,7 @@ export default function App() {
       {settingsOpen ? (
         <SettingsSheet
           state={state}
-          onPatch={patchSettings}
+          onPatch={patchSettingsFx}
           onImport={(next) => dispatch({ type: "state/import", state: next })}
           onReset={() => dispatch({ type: "state/reset" })}
           onClose={() => setSettingsOpen(false)}

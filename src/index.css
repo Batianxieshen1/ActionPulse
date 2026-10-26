@@ -1145,3 +1145,98 @@ select {
 .ap-pill[data-off="true"] {
   opacity: 0.55;
 }
+
+/* =========================================================================
+   Wave 1 · 生命感（审计路线图 L1）：View Transitions + 微反馈
+   ========================================================================= */
+
+/* 列表重排/增删的 VT：抑制默认的整页交叉淡化，让卡片按
+   view-transition-name 配对各自平滑滑动——紧迫度排序的变化从此肉眼可见。 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* 主题切换：以触发点为圆心的圆形扩散（坐标由 App 写入 --vt-x/--vt-y）。 */
+::view-transition-new(root) {
+  animation: ap-theme-reveal 480ms ease-in;
+}
+@keyframes ap-theme-reveal {
+  from {
+    clip-path: circle(0% at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+  to {
+    clip-path: circle(142% at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+}
+
+/* 按压反馈：按钮按下的物理感 */
+.ap-btn:active,
+.ap-icon-btn:active {
+  transform: scale(0.96);
+}
+
+/* 卡片悬停轻抬：几乎不可察觉，但指尖能感觉到"它是活的" */
+.ap-card {
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms ease;
+}
+.ap-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+}
+
+/* =========================================================================
+   Wave 2 · 周能量条（L2 成长可视化）：台面上的"本周你充了多少电"。
+   全部从既有记录派生，零新增存储；今天高亮为主色。
+   ========================================================================= */
+.ap-week {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+  height: 72px;
+}
+.ap-week__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 100%;
+}
+.ap-week__count {
+  color: var(--text-faint);
+  line-height: 1;
+}
+.ap-week__bar {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 4px 4px 0 0;
+  background: var(--line-strong);
+  transition: height 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ap-week__col[data-today="true"] .ap-week__bar {
+  background: var(--pulse);
+}
+.ap-week__label {
+  color: var(--text-faint);
+  line-height: 1;
+}
+.ap-week__col[data-today="true"] .ap-week__label {
+  color: var(--pulse);
+}
+
+/* =========================================================================
+   Wave 3 · 聚焦氛围（L3 仪式感）：柠檬色薄雾随呼吸明灭。
+   reduce-motion 下时长被压平，光晕静止在基础透明度。
+   ========================================================================= */
+.ap-focus-aura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 62% 46% at 50% 36%, var(--pulse-soft), transparent 72%);
+  animation: ap-breathe 4.8s ease-in-out infinite;
+}

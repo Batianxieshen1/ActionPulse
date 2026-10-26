@@ -55,7 +55,7 @@ export function MicroStepList({ task, onToggleSubtask, onSetSubtasks, onBreakdow
               onToggle={() => onToggleSubtask(sub.id)}
             />
             <span
-              className="flex-1 ap-t-sm leading-6"
+              className={`flex-1 ap-t-sm leading-6 transition-colors duration-300 ${sub.done ? "opacity-55" : ""}`}
               style={sub.done ? { color: "var(--text-faint)", textDecoration: "line-through" } : undefined}
             >
               {sub.title}

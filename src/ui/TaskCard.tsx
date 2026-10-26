@@ -116,7 +116,11 @@ export function TaskCard({
       // stagger 入场：前几张卡依次晚 30ms（封顶 5 张）。
       // reduce-motion 下动画时长已被压平，但 delay 未清零——由 CSS 的
       // reduce-motion 块统一把 animation-delay 也归零兜底。
-      style={{ animationDelay: `${Math.min(index, 5) * 30}ms` }}
+      // viewTransitionName：排序变化时卡片按 id 配对平滑滑动（Wave 1）。
+      style={{
+        animationDelay: `${Math.min(index, 5) * 30}ms`,
+        viewTransitionName: `task-${task.id}`,
+      }}
       onDragOver={(event) => {
         if (!manual) return;
         event.preventDefault();

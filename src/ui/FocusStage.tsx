@@ -183,7 +183,9 @@ export function FocusStage(props: Props) {
   })();
 
   return (
-    <div className="ap-overlay" role="dialog" aria-modal="true" aria-label={t("focus.title")}>
+    <div className="ap-overlay" role="dialog" aria-modal="true" aria-label="聚焦当下">
+      {/* Wave 3：氛围光晕——随呼吸明灭的柠檬色薄雾，让聚焦台面不是一块死黑 */}
+      <div className="ap-focus-aura" aria-hidden="true" />
       <header className="flex items-center justify-between px-5 py-4 sm:px-8">
         <div className="flex items-center gap-2">
           <span className="ap-label">{t("focus.title")}</span>
