@@ -162,7 +162,9 @@ describe("mergeStates — 代数性质（同步收敛的前提）", () => {
   });
 
   it("合并自身不产生变化", () => {
-    expect(mergeStates(a, a).changed).toBe(false);
+    // 必须显式传 now：不传会用真实时钟，夹具墓碑（T0 = 2026-10-08）在 30 天
+    // 保留期过后会被 merge 按设计清理，测试就变成时间炸弹（2026-11-08 起必挂）。
+    expect(mergeStates(a, a, T0 + 1000).changed).toBe(false);
   });
 });
 
