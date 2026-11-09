@@ -75,6 +75,8 @@ export interface Task {
   quadrant: Quadrant | null;
   /** 手动模式拖拽排序位次，从 0 递增。 */
   manualRank: number;
+  /** 上下文标签（差距 3）：如 ["工作"]；最多 4 个，单个 ≤12 字，经 sanitizeTags 清洗。 */
+  tags: string[];
   subtasks: SubTask[];
   done: boolean;
   /** ISO 时间戳；未完成时为 null。 */

@@ -200,6 +200,24 @@ export function sanitizeSubtask(raw: unknown): SubTask | null {
   return { id, title, done, completedAt };
 }
 
+/** 上下文标签约束（审计差距 3）：最多 4 个，单个 ≤12 字。 */
+export const MAX_TAGS = 4;
+export const MAX_TAG_LENGTH = 12;
+
+/** 清洗标签：非字符串丢弃、trim、去空、单标签截到 12 字（保留意图）、去重、最多 4 个。 */
+export function sanitizeTags(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry !== "string") continue;
+    const tag = entry.trim().slice(0, MAX_TAG_LENGTH);
+    if (tag.length === 0 || seen.has(tag)) continue;
+    seen.add(tag);
+    if (seen.size >= MAX_TAGS) break;
+  }
+  return [...seen];
+}
+
 export function sanitizeTask(raw: unknown, now: Date = new Date()): Task | null {
   if (!isRecord(raw)) return null;
   const title = typeof raw.title === "string" ? raw.title.trim() : "";
@@ -219,6 +237,7 @@ export function sanitizeTask(raw: unknown, now: Date = new Date()): Task | null 
         : null,
     quadrant: isQuadrant(raw.quadrant) ? raw.quadrant : null,
     manualRank: clampInt(raw.manualRank, 0, Number.MAX_SAFE_INTEGER, 0),
+    tags: sanitizeTags(raw.tags),
     subtasks: Array.isArray(raw.subtasks)
       ? raw.subtasks.map((entry) => sanitizeSubtask(entry)).filter(isNotNull)
       : [],

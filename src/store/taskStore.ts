@@ -14,7 +14,7 @@ import { createId } from "../domain/id";
 import { mergeStates } from "../domain/merge";
 import { nextCombo, recordCompletionDate, todayEnergy } from "../domain/streak";
 import { selectFocusTask, sortByUrgency } from "../domain/urgency";
-import { defaultStats, sanitizeSettings, sanitizeState, sanitizeTask } from "../domain/validation";
+import { defaultStats, sanitizeSettings, sanitizeState, sanitizeTags, sanitizeTask } from "../domain/validation";
 import type {
   AppState,
   DailyHabit,
@@ -40,6 +40,8 @@ export interface TaskDraft {
   quadrant?: Quadrant | null;
   subtasks?: SubTask[];
   manualRank?: number;
+  /** 上下文标签；缺省为空数组，经 sanitizeTags 清洗。 */
+  tags?: string[];
 }
 
 export type Action =
@@ -78,6 +80,7 @@ export function createTask(draft: TaskDraft, now: number = Date.now()): Task {
     estimateMinutes: draft.estimateMinutes ?? null,
     quadrant: draft.quadrant ?? null,
     manualRank: draft.manualRank ?? 0,
+    tags: sanitizeTags(draft.tags),
     subtasks: draft.subtasks ? draft.subtasks.map((sub) => ({ ...sub })) : [],
     done: false,
     createdAt: timestamp,
