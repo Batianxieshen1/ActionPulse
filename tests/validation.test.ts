@@ -158,6 +158,45 @@ describe("sanitizeTask", () => {
   });
 });
 
+describe("sanitizeTask.tags — 上下文标签（审计差距 3 / A1）", () => {
+  it("旧任务缺 tags 字段时平滑迁移为空数组，不丢任务", () => {
+    const task = sanitizeTask({ title: "上个版本的任务", createdAt: "2026-10-01T00:00:00.000Z" });
+    expect(task).not.toBeNull();
+    expect(task!.tags).toEqual([]);
+  });
+
+  it("tags 不是数组时回落为空数组（宽容导入哲学）", () => {
+    expect(sanitizeTask({ title: "x", tags: "工作" })!.tags).toEqual([]);
+    expect(sanitizeTask({ title: "x", tags: 42 })!.tags).toEqual([]);
+    expect(sanitizeTask({ title: "x", tags: null })!.tags).toEqual([]);
+    expect(sanitizeTask({ title: "x", tags: { a: 1 } })!.tags).toEqual([]);
+  });
+
+  it("清洗：非字符串项丢弃、trim、去空、去重、保留首次出现顺序", () => {
+    const task = sanitizeTask({ title: "x", tags: ["工作", 42, "", "  ", "工作", " 个人 ", null, "学习"] });
+    expect(task!.tags).toEqual(["工作", "个人", "学习"]);
+  });
+
+  it("单标签超长截断到 12 字（修复保留意图，而不是丢弃）", () => {
+    const task = sanitizeTask({ title: "x", tags: ["0123456789abc", "short"] });
+    expect(task!.tags).toEqual(["0123456789ab", "short"]);
+  });
+
+  it("最多保留前 4 个标签，多余丢弃", () => {
+    const task = sanitizeTask({ title: "x", tags: ["a", "b", "c", "d", "e", "f"] });
+    expect(task!.tags).toEqual(["a", "b", "c", "d"]);
+  });
+
+  it("tags 能随备份往返（换设备保留分类）", () => {
+    const state = defaultState();
+    state.tasks = [sanitizeTask({ title: "写周报", tags: ["工作", "周报"] })!];
+    const parsed = parseBackup(JSON.stringify(createBackup(state)));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.state.tasks[0].tags).toEqual(["工作", "周报"]);
+  });
+});
+
 describe("createBackup / parseBackup", () => {
   it("round-trips a full state losslessly", () => {
     const state = defaultState();

@@ -27,6 +27,7 @@ function makeTask(patch: Partial<Task> = {}): Task {
     estimateMinutes: patch.estimateMinutes === undefined ? null : patch.estimateMinutes,
     quadrant: patch.quadrant ?? null,
     manualRank: patch.manualRank ?? 0,
+    tags: patch.tags ?? [],
     subtasks: patch.subtasks ?? [],
     done: patch.done ?? false,
     createdAt: patch.createdAt ?? "2026-10-08T09:00:00",

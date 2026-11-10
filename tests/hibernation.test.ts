@@ -20,6 +20,7 @@ function task(patch: Partial<Task> = {}): Task {
     estimateMinutes: patch.estimateMinutes ?? null,
     quadrant: patch.quadrant ?? null,
     manualRank: patch.manualRank ?? 0,
+    tags: patch.tags ?? [],
     subtasks: patch.subtasks ?? [],
     done: patch.done ?? false,
     createdAt: patch.createdAt ?? new Date(NOW - HIBERNATION_MS * 2).toISOString(),
