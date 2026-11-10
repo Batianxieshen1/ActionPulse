@@ -262,3 +262,38 @@ describe("mergeStates — 健壮性", () => {
     expect(JSON.stringify(remote)).toBe(remoteSnapshot);
   });
 });
+
+describe("mergeStates — tags 跟随任务级 LWW（差距 3，钉住既有设计）", () => {
+  // 设计事实：任务合并是整条 LWW（pickNewer），不存在字段级合并点。tags 与 notes/importance
+  // 同语义：updatedAt 新的一方整条赢。刻意不做 union——标签是可变集合（用户会删标签），
+  // union 会让删除的标签永远复活（只有 habits 那种只增集合才配 union）。
+
+  it("两端改同一任务的 tags：updatedAt 新的一方整条赢", () => {
+    const local = state({ tasks: [task({ id: "a", tags: ["工作"], updatedAt: T0 })] });
+    const remote = state({ tasks: [task({ id: "a", tags: ["个人"], updatedAt: T0 + 1000 })] });
+    const merged = mergeStates(local, remote);
+    expect(merged.state.tasks[0].tags).toEqual(["个人"]);
+    expect(merged.changed).toBe(true);
+  });
+
+  it("本地 tags 更新时保留本地（不被远端旧 tags 回滚）", () => {
+    const local = state({ tasks: [task({ id: "a", tags: ["工作"], updatedAt: T0 + 5000 })] });
+    const remote = state({ tasks: [task({ id: "a", tags: ["旧标签"], updatedAt: T0 })] });
+    const merged = mergeStates(local, remote);
+    expect(merged.state.tasks[0].tags).toEqual(["工作"]);
+    expect(merged.changed).toBe(false);
+  });
+
+  it("updatedAt 相同且 tags 不同：确定性兜底，两端收敛同一结果（交换律）", () => {
+    const a = state({ tasks: [task({ id: "x", tags: ["AAA"], updatedAt: T0 })] });
+    const b = state({ tasks: [task({ id: "x", tags: ["ZZZ"], updatedAt: T0 })] });
+    expect(mergeStates(a, b).state.tasks[0].tags).toEqual(mergeStates(b, a).state.tasks[0].tags);
+  });
+
+  it("merge 自身不产生变化：tags 原样保留且 changed=false（幂等）", () => {
+    const s = state({ tasks: [task({ id: "a", tags: ["工作", "学习"], updatedAt: T0 })] });
+    const merged = mergeStates(s, s, T0 + 1000);
+    expect(merged.state.tasks[0].tags).toEqual(["工作", "学习"]);
+    expect(merged.changed).toBe(false);
+  });
+});
