@@ -13,6 +13,7 @@ function habit(patch: Partial<DailyHabit> & { id: string }): DailyHabit {
     emoji: "⚡",
     schedule: "daily",
     scheduleDay: null,
+    intervalDays: null,
     completedDates: [],
     archived: false,
     createdAt: NOW,

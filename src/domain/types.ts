@@ -20,7 +20,7 @@ export type Language = "zh" | "en";
  * 刻意是**规则而非生成实例**：到期与否从 today 派生，
  * 不产生任何需要跨端同步的「今日任务实例」，完成记录仍是 G-Set。
  */
-export type HabitSchedule = "daily" | "weekdays" | "weekly";
+export type HabitSchedule = "daily" | "weekdays" | "weekly" | "everyN";
 
 /**
  * 每日习惯 / 日常仪式（v2.1 模块一）。
@@ -35,6 +35,11 @@ export interface DailyHabit {
   schedule: HabitSchedule;
   /** schedule === "weekly" 的目标星期（0=周日 … 6=周六）；其他日程为 null。 */
   scheduleDay: number | null;
+  /**
+   * schedule === "everyN" 的间隔天数（1~365）：「打勾后第 N 天再生」。
+   * 到期判定是派生的（上次打勾日 + N ≤ 今天），打勾当天自动未到期。其他日程为 null。
+   */
+  intervalDays: number | null;
   /** 打勾过的本地日期键（YYYY-MM-DD）。 */
   completedDates: string[];
   archived: boolean;

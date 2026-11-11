@@ -146,8 +146,11 @@ export function sanitizeHabit(raw: unknown, now: Date = new Date()): DailyHabit 
 
   const createdAt = normalizeStamp(raw.createdAt, now.toISOString());
   const schedule =
-    raw.schedule === "weekdays" || raw.schedule === "weekly" ? raw.schedule : "daily";
+    raw.schedule === "weekdays" || raw.schedule === "weekly" || raw.schedule === "everyN"
+      ? raw.schedule
+      : "daily";
   const rawDay = Number.isInteger(raw.scheduleDay) ? (raw.scheduleDay as number) : null;
+  const rawInterval = Number.isInteger(raw.intervalDays) ? (raw.intervalDays as number) : null;
   return {
     id: typeof raw.id === "string" && raw.id.trim().length > 0 ? raw.id : createId("habit"),
     title,
@@ -160,6 +163,13 @@ export function sanitizeHabit(raw: unknown, now: Date = new Date()): DailyHabit 
         ? rawDay !== null && rawDay >= 0 && rawDay <= 6
           ? rawDay
           : new Date(createdAt).getDay()
+        : null,
+    // everyN 非法间隔回落默认 7（宽容修复）；其他日程一律 null。旧备份缺该字段时自然为 null
+    intervalDays:
+      schedule === "everyN"
+        ? rawInterval !== null && rawInterval >= 1 && rawInterval <= 365
+          ? rawInterval
+          : 7
         : null,
     completedDates: Array.isArray(raw.completedDates)
       ? [...new Set(raw.completedDates.filter((date) => isValidDateKey(date)))].sort()

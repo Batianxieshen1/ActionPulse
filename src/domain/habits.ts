@@ -29,10 +29,19 @@ export interface HabitDraft {
   emoji?: string;
   schedule?: HabitSchedule;
   scheduleDay?: number | null;
+  /** 仅 schedule === "everyN" 使用；缺省 7 天，非法值钳回 7（先有确定行为）。 */
+  intervalDays?: number;
 }
 
 function clampWeekday(value: number): number {
   return Number.isInteger(value) && value >= 0 && value <= 6 ? value : 0;
+}
+
+/** everyN 间隔的合法域是 1~365 天，越界一律回落默认 7（与 weekly 缺目标日取创建日同一哲学）。 */
+function clampInterval(value: number | null | undefined): number {
+  return Number.isInteger(value) && (value as number) >= 1 && (value as number) <= 365
+    ? (value as number)
+    : 7;
 }
 
 export function createHabit(draft: HabitDraft, now: number = Date.now()): DailyHabit {
@@ -44,6 +53,7 @@ export function createHabit(draft: HabitDraft, now: number = Date.now()): DailyH
     schedule,
     // weekly 未指定目标日时默认"创建日的那一天"——先有确定行为，用户想改可重建
     scheduleDay: schedule === "weekly" ? clampWeekday(draft.scheduleDay ?? new Date(now).getDay()) : null,
+    intervalDays: schedule === "everyN" ? clampInterval(draft.intervalDays ?? 7) : null,
     completedDates: [],
     archived: false,
     createdAt: now,
@@ -105,6 +115,7 @@ function mergeHabit(a: DailyHabit, b: DailyHabit): DailyHabit {
     archived: winner.archived,
     schedule: winner.schedule,
     scheduleDay: winner.scheduleDay,
+    intervalDays: winner.intervalDays,
     createdAt: Math.min(a.createdAt, b.createdAt),
     updatedAt: Math.max(a.updatedAt, b.updatedAt),
     completedDates,
@@ -133,6 +144,7 @@ export function habitSignature(habit: DailyHabit): string {
     habit.emoji,
     habit.schedule,
     habit.scheduleDay === null ? "-" : String(habit.scheduleDay),
+    habit.intervalDays === null ? "-" : String(habit.intervalDays),
     habit.completedDates.join(","),
   ].join("|");
 }

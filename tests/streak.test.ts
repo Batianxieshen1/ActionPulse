@@ -149,6 +149,7 @@ describe("todayEnergy", () => {
       emoji: "⚡",
       schedule: "weekdays" as const,
       scheduleDay: null,
+      intervalDays: null,
       completedDates: [],
       archived: false,
       createdAt: NOW,

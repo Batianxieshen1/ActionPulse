@@ -15,7 +15,6 @@ import {
   toggleHabitDate,
 } from "../src/domain/habits";
 import type { DailyHabit } from "../src/domain/habits";
-
 const T0 = Date.parse("2026-10-08T09:00:00");
 const TODAY = "2026-10-08";
 
@@ -25,6 +24,7 @@ function habit(patch: Partial<DailyHabit> & { id: string }): DailyHabit {
     emoji: DEFAULT_HABIT_EMOJI,
     schedule: "daily",
     scheduleDay: null,
+    intervalDays: null,
     completedDates: [],
     archived: false,
     createdAt: T0,
@@ -286,5 +286,55 @@ describe("日程规则（Phase 3：派生式周期习惯）", () => {
     const weekly = { ...daily, schedule: "weekly" as const, scheduleDay: 6 };
     expect(habitSignature(daily)).not.toBe(habitSignature(weekly));
     expect(sameHabits([daily], [weekly])).toBe(false);
+  });
+});
+
+describe("everyN 相对完成间隔循环（审计差距 2b / A4）", () => {
+  // 设计事实：到期判定是派生的（schedule.ts 核心约束），everyN 完全融入该模型——
+  // 到期 = 上次打勾日 + N ≤ 今天。打勾当天自动未到期，零清理逻辑、零实例生成，
+  // 同步代数不动（G-Set + 字段级 LWW 原样成立）。
+
+  const H = (patch: Partial<DailyHabit>) => habit({ id: "n", schedule: "everyN", intervalDays: 10, ...patch });
+
+  it("从未打勾：一直到期（等第一次打勾进入循环）", () => {
+    expect(isHabitDueToday(H({ completedDates: [] }), TODAY)).toBe(true);
+  });
+
+  it("打勾后第 N-1 天未到期、第 N 天到期、逾期持续到期", () => {
+    const done = ["2026-11-01"];
+    expect(isHabitDueToday(H({ completedDates: done }), "2026-11-10")).toBe(false); // 间隔 9 天
+    expect(isHabitDueToday(H({ completedDates: done }), "2026-11-11")).toBe(true); // 间隔恰 10 天
+    expect(isHabitDueToday(H({ completedDates: done }), "2026-11-12")).toBe(true); // 逾期持续到期
+  });
+
+  it("打勾当天自动未到期（完成即重置，无债务）", () => {
+    expect(isHabitDueToday(H({ completedDates: ["2026-11-01"] }), "2026-11-01")).toBe(false);
+  });
+
+  it("取消打勾后回退到上一次完成日重算（数据即真相）", () => {
+    const both = ["2026-10-20", "2026-11-01"];
+    expect(isHabitDueToday(H({ completedDates: both }), "2026-11-05")).toBe(false);
+    const undone = ["2026-10-20"]; // 取消 11-01 → 上次完成是 10-20，10-30 起到期
+    expect(isHabitDueToday(H({ completedDates: undone }), "2026-11-05")).toBe(true);
+  });
+
+  it("nextUncompletedHabit 在非到期日跳过 everyN 习惯", () => {
+    const habits = [H({ id: "n", completedDates: ["2026-11-01"] })];
+    expect(nextUncompletedHabit(habits, "2026-11-03")).toBeNull();
+    expect(nextUncompletedHabit(habits, "2026-11-11")).not.toBeNull();
+  });
+
+  it("createHabit：everyN 默认 7 天，非法间隔钳回默认（先有确定行为）", () => {
+    expect(createHabit({ title: "x", schedule: "everyN" }, T0).intervalDays).toBe(7);
+    expect(createHabit({ title: "x", schedule: "everyN", intervalDays: 10 }, T0).intervalDays).toBe(10);
+    expect(createHabit({ title: "x", schedule: "everyN", intervalDays: 0 }, T0).intervalDays).toBe(7);
+    expect(createHabit({ title: "x", schedule: "everyN", intervalDays: 400 }, T0).intervalDays).toBe(7);
+  });
+
+  it("mergeHabit：intervalDays 跟随 winner；签名覆盖 intervalDays（漏判防护）", () => {
+    const a = habit({ id: "m", schedule: "everyN", intervalDays: 5, updatedAt: T0 });
+    const b = habit({ id: "m", schedule: "everyN", intervalDays: 30, updatedAt: T0 + 100 });
+    expect(mergeHabits([a], [b])[0].intervalDays).toBe(30);
+    expect(sameHabits([a], [{ ...a, intervalDays: 30 }])).toBe(false);
   });
 });
