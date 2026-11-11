@@ -56,7 +56,7 @@ export type Action =
   | { type: "subtask/remove"; taskId: string; subId: string }
   | { type: "subtask/toggle"; taskId: string; subId: string; now: number }
   | { type: "subtask/set"; taskId: string; titles: string[] }
-  | { type: "habit/add"; title: string; emoji?: string; schedule?: HabitSchedule; scheduleDay?: number | null; now: number }
+  | { type: "habit/add"; title: string; emoji?: string; schedule?: HabitSchedule; scheduleDay?: number | null; intervalDays?: number; now: number }
   | { type: "habit/toggle"; id: string; now: number }
   | { type: "habit/complete"; id: string; now: number }
   | { type: "habit/update"; id: string; patch: { title?: string; emoji?: string } }
@@ -258,7 +258,13 @@ export function reducer(state: AppState, action: Action): AppState {
         habits: [
           ...state.habits,
           createHabit(
-            { title, emoji: action.emoji, schedule: action.schedule, scheduleDay: action.scheduleDay },
+            {
+              title,
+              emoji: action.emoji,
+              schedule: action.schedule,
+              scheduleDay: action.scheduleDay,
+              intervalDays: action.intervalDays,
+            },
             action.now,
           ),
         ],

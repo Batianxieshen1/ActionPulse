@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
+import type { DailyHabit } from "./domain/types";
 
 /**
  * 轻量 i18n（2026-10 UI 方案 3.4）。
@@ -381,6 +382,9 @@ const zh = {
   "habit.scheduleDaily": "每天",
   "habit.scheduleWeekdays": "工作日",
   "habit.scheduleWeekly": "每周",
+  "habit.scheduleEveryN": "每 N 天",
+  "habit.scheduleEveryNDays": "每 {n} 天",
+  "habit.scheduleIntervalDays": "间隔天数",
   "habit.scheduleDay": "星期几",
   "habit.notToday": "今天不是它的日子",
   "weekday.0": "周日",
@@ -804,6 +808,9 @@ const en: Record<TKey, string> = {
   "habit.scheduleDaily": "Daily",
   "habit.scheduleWeekdays": "Weekdays",
   "habit.scheduleWeekly": "Weekly",
+  "habit.scheduleEveryN": "Every N days",
+  "habit.scheduleEveryNDays": "Every {n} days",
+  "habit.scheduleIntervalDays": "Interval days",
   "habit.scheduleDay": "Weekday",
   "habit.notToday": "Not scheduled today",
   "weekday.0": "Sun",
@@ -883,6 +890,20 @@ const DICTS: Record<Lang, Record<TKey, string>> = { zh, en };
 
 /** 0=周日 … 6=周六 的文案键（与 Date#getDay 对齐），周能量图/习惯日程共用。 */
 export const WEEKDAY_KEYS = ["weekday.0", "weekday.1", "weekday.2", "weekday.3", "weekday.4", "weekday.5", "weekday.6"] as const;
+
+/**
+ * 习惯日程的显示文案（A5）：weekdays/weekly/everyN 各归其位，everyN 缺间隔时兜底 7。
+ * 纯函数抽出以便单测（HabitBar 的显示与表单共用同一份语义）。
+ */
+export function habitScheduleLabel(
+  habit: Pick<DailyHabit, "schedule" | "scheduleDay" | "intervalDays">,
+  t: (key: TKey, params?: Record<string, string | number>) => string,
+): string {
+  if (habit.schedule === "weekdays") return t("habit.scheduleWeekdays");
+  if (habit.schedule === "everyN") return t("habit.scheduleEveryNDays", { n: habit.intervalDays ?? 7 });
+  if (habit.schedule === "weekly") return t(WEEKDAY_KEYS[habit.scheduleDay ?? 0]);
+  return t("habit.scheduleDaily");
+}
 
 /* ------------------------------ 语言状态（模块级单例） ------------------------------ */
 

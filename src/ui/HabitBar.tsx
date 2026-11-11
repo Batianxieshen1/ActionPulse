@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Play, Plus, Target, X } from "lucide-react";
 import { habitsCompletion, isDoneToday, isHabitDueToday, nextUncompletedHabit } from "../domain/habits";
 import type { DailyHabit, HabitSchedule } from "../domain/types";
-import { WEEKDAY_KEYS, useT } from "../i18n";
+import { WEEKDAY_KEYS, habitScheduleLabel, useT } from "../i18n";
 
 interface Props {
   habits: DailyHabit[];
   archived: DailyHabit[];
   today: string;
-  onAdd: (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => void;
+  onAdd: (
+    title: string,
+    emoji?: string,
+    schedule?: HabitSchedule,
+    scheduleDay?: number | null,
+    intervalDays?: number,
+  ) => void;
   onToggle: (habit: DailyHabit) => void;
   onFocusHabit: (habit: DailyHabit) => void;
   onArchive: (id: string) => void;
@@ -35,6 +41,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
   const [emoji, setEmoji] = useState(EMOJI_PRESETS[0]);
   const [schedule, setSchedule] = useState<HabitSchedule>("daily");
   const [scheduleDay, setScheduleDay] = useState<number>(() => new Date().getDay());
+  const [intervalDraft, setIntervalDraft] = useState(7);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -51,7 +58,13 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
   const submitHabit = () => {
     const title = draft.trim();
     if (title.length === 0) return;
-    onAdd(title, emoji, schedule, schedule === "weekly" ? scheduleDay : null);
+    onAdd(
+      title,
+      emoji,
+      schedule,
+      schedule === "weekly" ? scheduleDay : null,
+      schedule === "everyN" ? intervalDraft : undefined,
+    );
     setDraft("");
     setAdding(false);
   };
@@ -164,11 +177,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                   <span aria-hidden="true">{habit.emoji}</span>
                   {habit.title}
                   {habit.schedule !== "daily" ? (
-                    <span className="ap-label">
-                      {habit.schedule === "weekdays"
-                        ? t("habit.scheduleWeekdays")
-                        : t(WEEKDAY_KEYS[habit.scheduleDay ?? 0])}
-                    </span>
+                    <span className="ap-label">{habitScheduleLabel(habit, t)}</span>
                   ) : null}
                 </button>
                 {!done ? (
@@ -230,7 +239,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                   }
                 }}
               />
-              {/* 日程：每天 / 工作日 / 每周某天。规则派生，不生成任务实例。 */}
+              {/* 日程：每天 / 工作日 / 每周某天 / 每 N 天。规则派生，不生成任务实例。 */}
               <select
                 className="ap-select"
                 style={{ padding: "1px 4px", fontSize: "var(--fs-sm)", border: "none", background: "transparent" }}
@@ -241,6 +250,7 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                 <option value="daily">{t("habit.scheduleDaily")}</option>
                 <option value="weekdays">{t("habit.scheduleWeekdays")}</option>
                 <option value="weekly">{t("habit.scheduleWeekly")}</option>
+                <option value="everyN">{t("habit.scheduleEveryN")}</option>
               </select>
               {schedule === "weekly" ? (
                 <select
@@ -256,6 +266,21 @@ export function HabitBar({ habits, archived, today, onAdd, onToggle, onFocusHabi
                     </option>
                   ))}
                 </select>
+              ) : null}
+              {schedule === "everyN" ? (
+                <input
+                  className="ap-pill-input"
+                  style={{ width: 44 }}
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={intervalDraft}
+                  onChange={(event) => {
+                    const value = Number(event.target.value);
+                    setIntervalDraft(Number.isFinite(value) ? value : 7);
+                  }}
+                  aria-label={t("habit.scheduleIntervalDays")}
+                />
               ) : null}
               <button type="button" className="ap-icon-btn" style={{ width: 20, height: 20 }} aria-label={t("habit.addConfirm")} onClick={submitHabit}>
                 <Check size={12} />

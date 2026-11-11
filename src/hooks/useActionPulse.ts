@@ -49,7 +49,13 @@ export interface ActionPulseApi {
   dismissToast: (id: string) => void;
   pushToast: (text: string, tone?: "normal" | "hot" | "info") => void;
   toggleTask: (task: Task, origin?: { x: number; y: number }) => void;
-  addHabit: (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => void;
+  addHabit: (
+    title: string,
+    emoji?: string,
+    schedule?: HabitSchedule,
+    scheduleDay?: number | null,
+    intervalDays?: number,
+  ) => void;
   toggleHabit: (habit: DailyHabit, origin?: { x: number; y: number }) => void;
   completeHabit: (habit: DailyHabit) => void;
   archiveHabit: (id: string) => void;
@@ -147,8 +153,14 @@ export function useActionPulse(): ActionPulseApi {
   );
 
   const addHabit = useCallback(
-    (title: string, emoji?: string, schedule?: HabitSchedule, scheduleDay?: number | null) => {
-      dispatch({ type: "habit/add", title, emoji, schedule, scheduleDay, now: Date.now() });
+    (
+      title: string,
+      emoji?: string,
+      schedule?: HabitSchedule,
+      scheduleDay?: number | null,
+      intervalDays?: number,
+    ) => {
+      dispatch({ type: "habit/add", title, emoji, schedule, scheduleDay, intervalDays, now: Date.now() });
     },
     [dispatch],
   );

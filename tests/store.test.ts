@@ -370,3 +370,17 @@ describe("reducer purity", () => {
     expect(JSON.stringify(prev)).toBe(snapshot);
   });
 });
+
+
+describe("habit/add — everyN 间隔（A5）", () => {
+  it("everyN + intervalDays 透传到 createHabit", () => {
+    const next = reducer(defaultState(), { type: "habit/add", title: "复习", schedule: "everyN", intervalDays: 10, now: NOW });
+    expect(next.habits[0].schedule).toBe("everyN");
+    expect(next.habits[0].intervalDays).toBe(10);
+  });
+
+  it("daily 路径 intervalDays 为 null（旧调用不传也不破坏）", () => {
+    const next = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
+    expect(next.habits[0].intervalDays).toBeNull();
+  });
+});
