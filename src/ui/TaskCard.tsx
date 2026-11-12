@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, GripVertical, Trash2 } from "lucide-react";
 import { daysBetween } from "../domain/dates";
 import type { Importance, Quadrant, Task } from "../domain/types";
@@ -90,8 +90,40 @@ export function TaskCard({
   };
   const [open, setOpen] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(false);
   const [editing, setEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(task.title);
+
+  /**
+   * A7 删除撤销：确认后不立即 dispatch，给 5 秒「待删除」窗口（卡片变灰 + 撤销按钮），
+   * 窗口内撤销 = 取消定时器；超时才真正移除。零数据模型改动——墓碑机制原样，
+   * 撤销发生在「删除发生前」，不需要任何同步协议层面的回滚。
+   */
+  const REMOVAL_WINDOW_MS = 5000;
+  const removeTimer = useRef<number | null>(null);
+  const beginRemove = () => {
+    setPendingRemove(true);
+    removeTimer.current = window.setTimeout(() => {
+      removeTimer.current = null;
+      setPendingRemove(false);
+      onRemove(task.id);
+    }, REMOVAL_WINDOW_MS);
+  };
+  const cancelRemove = () => {
+    if (removeTimer.current !== null) {
+      window.clearTimeout(removeTimer.current);
+      removeTimer.current = null;
+    }
+    setPendingRemove(false);
+  };
+  // 卡片因任何原因卸载（过滤/归档/父级重渲染移除）时必须清掉定时器，
+  // 否则超时回调会对已不存在的任务发 dispatch（reducer 有防御，但泄漏不该靠防御兜）。
+  useEffect(
+    () => () => {
+      if (removeTimer.current !== null) window.clearTimeout(removeTimer.current);
+    },
+    [],
+  );
 
   const due = dueLabel(task.due, today);
   const estimate = estimateLabel(task.estimateMinutes);
@@ -113,11 +145,14 @@ export function TaskCard({
       className="ap-card ap-reveal px-3 py-2.5"
       data-rank={rank === 0 && !manual ? 0 : undefined}
       data-dragging={dragging ? "true" : undefined}
+      data-removing={pendingRemove ? "true" : undefined}
       // stagger 入场：前几张卡依次晚 30ms（封顶 5 张）。
       // reduce-motion 下动画时长已被压平，但 delay 未清零——由 CSS 的
       // reduce-motion 块统一把 animation-delay 也归零兜底。
       // viewTransitionName：排序变化时卡片按 id 配对平滑滑动（Wave 1）。
+      // pendingRemove：待删除窗口内整卡降透明度（A7），无独立 CSS 类。
       style={{
+        ...(pendingRemove ? { opacity: 0.45 } : undefined),
         animationDelay: `${Math.min(index, 5) * 30}ms`,
         viewTransitionName: `task-${task.id}`,
       }}
@@ -346,14 +381,29 @@ export function TaskCard({
                   ) : null}
                 </div>
 
-                {confirmRemove ? (
+                {pendingRemove ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="ap-t-xs text-[var(--text-dim)]">{t("card.removingHint")}</span>
+                    <button
+                      type="button"
+                      className="ap-btn"
+                      style={{ padding: "3px 9px", fontSize: "var(--fs-xs)" }}
+                      onClick={cancelRemove}
+                    >
+                      {t("card.undoRemove")}
+                    </button>
+                  </div>
+                ) : confirmRemove ? (
                   <div className="flex items-center gap-1.5">
                     <span className="ap-t-xs text-[var(--text-dim)]">{t("card.deleteShort")}</span>
                     <button
                       type="button"
                       className="ap-btn"
                       style={{ padding: "3px 9px", fontSize: "var(--fs-xs)", color: "var(--tier-critical)" }}
-                      onClick={() => onRemove(task.id)}
+                      onClick={() => {
+                        setConfirmRemove(false);
+                        beginRemove();
+                      }}
                     >
                       {t("card.deleteBtn")}
                     </button>

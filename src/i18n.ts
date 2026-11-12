@@ -355,6 +355,10 @@ const zh = {
   "card.moveDown": "下移",
   "card.deleteShort": "确定删除？",
   "card.deleteBtn": "删除",
+  "card.removingHint": "即将删除，",
+
+  "card.undoRemove": "撤销",
+
 
   "focus.habitIntro": "把今天的日常，变成现在的一小步。",
   "focus.habitDone": "今天已完成，做得好。",
@@ -784,6 +788,10 @@ const en: Record<TKey, string> = {
   "card.moveDown": "Move down",
   "card.deleteShort": "Delete?",
   "card.deleteBtn": "Delete",
+  "card.removingHint": "Deleting —",
+
+  "card.undoRemove": "Undo",
+
 
   "focus.habitIntro": "Turn today's ritual into one small step, right now.",
   "focus.habitDone": "Already done today — nice.",
