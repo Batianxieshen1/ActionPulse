@@ -168,7 +168,16 @@ export function habitsCompletion(habits: readonly DailyHabit[], today: string): 
   return { done, total, percent: total === 0 ? 0 : Math.min(100, Math.round((done / total) * 100)) };
 }
 
-/** 单个习惯的连续天数，直接复用任务的 streak 算法。 */
+/**
+ * 单个习惯的连续天数，直接复用任务的 streak 算法。
+ *
+ * ⚠️ 语义边界（2026-11-12 人类拍板 D3，勿再翻案）：
+ *  - 本函数**目前没有任何调用点**；UI 上的 streak 全部是任务的 Stats.streakDays（DebriefSheet/IdleStage），
+ *    与习惯无关。保留它只是为了不破坏既有导出 API。
+ *  - 对 everyN 习惯它返回的是「按日的连续打勾天数」，稀疏打勾时为 1——**这不代表 everyN 的循环完成次数**。
+ *    若将来 UI 真要展示习惯连击，请先定义 everyN 的语义（循环次数 / 间隔遵守率）再复用或替换本函数，
+ *    不要直接把稀疏结果当「连击」展示给用户。
+ */
 export function habitStreak(habit: DailyHabit, today: string): number {
   return streakDays(habit.completedDates, today);
 }
