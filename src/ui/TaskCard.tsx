@@ -212,7 +212,7 @@ export function TaskCard({
             </button>
           </div>
 
-          {(due || estimate || subTotal > 0 || manual) && !open ? (
+          {(due || estimate || subTotal > 0 || manual || (task.tags?.length ?? 0) > 0) && !open ? (
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
               {due ? <span className="ap-chip" data-tone={due.tone}>{due.text}</span> : null}
               {estimate ? (
@@ -226,6 +226,11 @@ export function TaskCard({
                 </span>
               ) : null}
               {manual && task.quadrant ? <span className="ap-chip">{quadrantLabel[task.quadrant]}</span> : null}
+              {(task.tags ?? []).map((tag) => (
+                <span key={tag} className="ap-chip">
+                  #{tag}
+                </span>
+              ))}
             </div>
           ) : null}
 

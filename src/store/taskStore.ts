@@ -449,3 +449,21 @@ export function activeHabitList(state: AppState): DailyHabit[] {
 export function archivedHabitList(state: AppState): DailyHabit[] {
   return state.habits.filter((habit) => habit.archived);
 }
+
+
+/* ------------------------------ 标签过滤（审计差距 3 / A6） ------------------------------ */
+
+/** 收集全库任务的去重标签并排序（过滤 chips 的数据源）。 */
+export function collectTags(tasks: readonly Task[]): string[] {
+  const seen = new Set<string>();
+  for (const task of tasks) {
+    for (const tag of task.tags ?? []) seen.add(tag);
+  }
+  return [...seen].sort((a, b) => a.localeCompare(b, "zh"));
+}
+
+/** 按标签过滤；tag 为 null 表示「全部」，原样返回同一引用（调用方可做恒等判断）。 */
+export function filterByTag(tasks: readonly Task[], tag: string | null): Task[] {
+  if (tag === null) return tasks as Task[];
+  return tasks.filter((task) => (task.tags ?? []).includes(tag));
+}

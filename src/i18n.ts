@@ -138,6 +138,9 @@ const zh = {
 
   // ---------- 清单 / 空态 ----------
   "list.empty": "清单是空的 —— 写下第一件事就行，系统会替你算。",
+  "list.tagFilter": "按标签筛选",
+  "list.tagAll": "全部",
+  "list.tagEmpty": "这个标签下暂无任务",
   "list.demoTitle": "试试看：点一下圆圈",
   "list.demoSubtitle": "打勾的瞬间会发生什么",
   "list.demoDoneTitle": "就是这个感觉",
@@ -572,6 +575,9 @@ const en: Record<TKey, string> = {
   "check.undo": "Undo complete: {title}",
 
   "list.empty": "The list is empty — just write the first thing down, the system will do the ordering.",
+  "list.tagFilter": "Filter by tag",
+  "list.tagAll": "All",
+  "list.tagEmpty": "No tasks with this tag",
   "list.demoTitle": "Try it: tap the circle",
   "list.demoSubtitle": "See what happens the moment you check it off",
   "list.demoDoneTitle": "That's the feeling",

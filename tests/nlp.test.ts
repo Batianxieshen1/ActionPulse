@@ -182,3 +182,49 @@ describe("parseCapture —— 组合与兜底", () => {
     expect(parseCapture("甲 今天", "2030-01-01").due).toBe("2030-01-01");
   });
 });
+
+describe("parseCapture —— #标签（审计差距 3 / A6）", () => {
+  it("空白分隔的 #标签 进 tags，多个收集且去重保序", () => {
+    const r = parseCapture("写周报 #工作 #学习 #工作", THU);
+    expect(r.title).toBe("写周报");
+    expect(r.tags).toEqual(["工作", "学习"]);
+  });
+
+  it("紧贴正文的 #标签 从末尾剥离（中文不打空格）", () => {
+    const r = parseCapture("写周报#工作", THU);
+    expect(r.title).toBe("写周报");
+    expect(r.tags).toEqual(["工作"]);
+  });
+
+  it("连续紧贴多个标签也能逐个剥离", () => {
+    const r = parseCapture("写周报#工作#学习", THU);
+    expect(r.title).toBe("写周报");
+    expect(r.tags).toEqual(["工作", "学习"]);
+  });
+
+  it("标签与既有标记混用互不干扰", () => {
+    const r = parseCapture("写周报 #工作 !high 今天 ~15m", THU);
+    expect(r.title).toBe("写周报");
+    expect(r.tags).toEqual(["工作"]);
+    expect(r.importance).toBe("high");
+    expect(r.due).toBe(THU);
+    expect(r.estimateMinutes).toBe(15);
+  });
+
+  it("裸 # 或非法字符不当标签（留在标题里，不吞输入）", () => {
+    expect(parseCapture("问题 # 是什么", THU).tags).toBeUndefined();
+    expect(parseCapture("C++ 笔记 #a!", THU).tags).toBeUndefined();
+  });
+
+  it("超长标签（>12 字）不匹配，留标题由用户自己改", () => {
+    const r = parseCapture("记 #这是一个超过十二个字的长标签哈哈", THU);
+    expect(r.tags).toBeUndefined();
+    expect(r.title).toContain("这是一个超过十二个字");
+  });
+
+  it("剥完只剩标签时标题回退原文，但标签仍生效（与既有标记语义一致）", () => {
+    const r = parseCapture("#工作", THU);
+    expect(r.title).toBe("#工作");
+    expect(r.tags).toEqual(["工作"]);
+  });
+});

@@ -6,7 +6,15 @@ import type { Importance } from "../domain/types";
 import { tr, useT } from "../i18n";
 
 interface Props {
-  onAdd: (title: string, patch?: { importance?: Importance; due?: string | null; estimateMinutes?: number | null }) => void;
+  onAdd: (
+    title: string,
+    patch?: {
+      importance?: Importance;
+      due?: string | null;
+      estimateMinutes?: number | null;
+      tags?: string[];
+    },
+  ) => void;
 }
 
 const ESTIMATE_PRESETS = [5, 15, 30, 60];
@@ -43,7 +51,10 @@ export function QuickAdd({ onAdd }: Props) {
   const today = todayKey();
   const parsed = useMemo(() => parseCapture(title, today), [title, today]);
   const parsedAnything =
-    parsed.importance !== undefined || parsed.due !== undefined || parsed.estimateMinutes !== undefined;
+    parsed.importance !== undefined ||
+    parsed.due !== undefined ||
+    parsed.estimateMinutes !== undefined ||
+    parsed.tags !== undefined;
 
   const submit = () => {
     const value = parsed.title.trim();
@@ -53,6 +64,8 @@ export function QuickAdd({ onAdd }: Props) {
       importance: parsed.importance ?? importance,
       due: parsed.due ?? (due === "" ? null : due),
       estimateMinutes: parsed.estimateMinutes ?? (estimate === "" ? null : Number(estimate)),
+      // 标签没有下拉缺省值：解析到才带上（上限/长度由 sanitizeTask 兜底）
+      tags: parsed.tags,
     });
     setTitle("");
   };
@@ -100,6 +113,11 @@ export function QuickAdd({ onAdd }: Props) {
           {parsed.estimateMinutes !== undefined ? (
             <span className="ap-chip">{parsed.estimateMinutes} {t("common.minute")}</span>
           ) : null}
+          {(parsed.tags ?? []).map((tag) => (
+            <span key={tag} className="ap-chip">
+              #{tag}
+            </span>
+          ))}
         </div>
       ) : null}
 
@@ -160,7 +178,8 @@ export function QuickAdd({ onAdd }: Props) {
         {t("quick.hint")}<code className="ap-mono">!high</code> <code className="ap-mono">!med</code>{" "}
         <code className="ap-mono">!low</code> · <code className="ap-mono">今天</code>{" "}
         <code className="ap-mono">明天</code> <code className="ap-mono">周三</code> ·{" "}
-        <code className="ap-mono">~15m</code> <code className="ap-mono">~1h</code>
+        <code className="ap-mono">~15m</code> <code className="ap-mono">~1h</code> ·{" "}
+        <code className="ap-mono">#工作</code>
       </p>
     </div>
   );

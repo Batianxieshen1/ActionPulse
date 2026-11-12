@@ -25,6 +25,8 @@ export interface ParsedCapture {
   importance?: Importance;
   due?: string;
   estimateMinutes?: number;
+  /** #标签（审计差距 3 / A6）：解析层只去重保序，上限与长度截断交给 sanitizeTask 兜底。 */
+  tags?: string[];
 }
 
 const IMPORTANCE_MARKER: Record<string, Importance> = {
@@ -54,10 +56,22 @@ export const MAX_ESTIMATE_MINUTES = 600;
 const IMPORTANCE_TOKEN = /^!([a-z]+)$/i;
 const ESTIMATE_TOKEN = /^~(\d+)(分钟|小时|m|h)$/i;
 const DATE_TOKEN = /^(今天|明天|后天|周[一二三四五六日天])$/;
+/** #标签：中文/字母/数字/下划线/连字符，1~12 字（与 sanitizeTags 的 MAX_TAG_LENGTH 对齐）。 */
+const TAG_TOKEN = /^#([\u4e00-\u9fffA-Za-z0-9_-]{1,12})$/u;
+const TAG_CHARS = "[\\u4e00-\\u9fffA-Za-z0-9_-]";
+const GLUED_TAG = new RegExp(`#(${TAG_CHARS}{1,12})$`, "u");
 
 const GLUED_DATE = /(今天|明天|后天|周[一二三四五六日天])$/;
 const GLUED_ESTIMATE = /~(\d+)(分钟|小时|m|h)$/i;
 const GLUED_IMPORTANCE = /!([a-z]+)$/i;
+
+function addTag(parsed: ParsedCapture, tag: string): void {
+  const seen = new Set(parsed.tags ?? []);
+  if (!seen.has(tag)) {
+    seen.add(tag);
+    parsed.tags = [...seen];
+  }
+}
 
 function clampEstimate(value: number): number {
   return Math.min(MAX_ESTIMATE_MINUTES, Math.max(MIN_ESTIMATE_MINUTES, Math.round(value)));
@@ -85,6 +99,7 @@ interface Glued {
   due?: string;
   importance?: Importance;
   estimateMinutes?: number;
+  tag?: string;
 }
 
 /** 从字符串末尾剥离一个紧贴的标记；剥不动就返回 null。 */
@@ -106,6 +121,12 @@ function stripGlued(text: string, today: string): Glued | null {
     const mapped = IMPORTANCE_MARKER[importance[1].toLowerCase()];
     const rest = text.slice(0, importance.index);
     if (mapped && rest.trim().length > 0) return { rest, importance: mapped };
+  }
+
+  const tag = text.match(GLUED_TAG);
+  if (tag) {
+    const rest = text.slice(0, tag.index);
+    if (rest.trim().length > 0) return { rest, tag: tag[1] };
   }
 
   return null;
@@ -138,19 +159,28 @@ export function parseCapture(input: string, today: string): ParsedCapture {
         continue;
       }
     }
+    const tag = token.match(TAG_TOKEN);
+    if (tag) {
+      addTag(parsed, tag[1]);
+      continue;
+    }
     titleParts.push(token);
   }
 
-  // 第二遍：从末尾剥离紧贴正文的标记（中文常不打空格）
+  // 第二遍：从末尾剥离紧贴正文的标记（中文常不打空格）。
+  // 紧贴标签是逆序剥离（从末尾往前），先收集再反转恢复输入顺序。
   let title = titleParts.join(" ");
-  for (let guard = 0; guard < 4; guard += 1) {
+  const gluedTags: string[] = [];
+  for (let guard = 0; guard < 6; guard += 1) {
     const glued = stripGlued(title, today);
     if (!glued) break;
     if (glued.due !== undefined) parsed.due = glued.due;
     if (glued.importance !== undefined) parsed.importance = glued.importance;
     if (glued.estimateMinutes !== undefined) parsed.estimateMinutes = glued.estimateMinutes;
+    if (glued.tag !== undefined) gluedTags.push(glued.tag);
     title = glued.rest.trim();
   }
+  for (const tag of gluedTags.reverse()) addTag(parsed, tag);
 
   // 兜底：整条都是标记时，宁可把原文当标题，也不产出空标题
   parsed.title = title.length > 0 ? title : collapsed;

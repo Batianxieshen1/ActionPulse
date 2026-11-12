@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_FOCUS_RECORD_MINUTES, activeHabitList, createTask, energy, reducer } from "../src/store/taskStore";
+import { MAX_FOCUS_RECORD_MINUTES, activeHabitList, collectTags, createTask, energy, filterByTag, reducer } from "../src/store/taskStore";
 import { defaultState } from "../src/domain/validation";
 import { dateKeyOf } from "../src/domain/dates";
 import type { AppState, Task } from "../src/domain/types";
@@ -382,5 +382,29 @@ describe("habit/add — everyN 间隔（A5）", () => {
   it("daily 路径 intervalDays 为 null（旧调用不传也不破坏）", () => {
     const next = reducer(defaultState(), { type: "habit/add", title: "喝水", now: NOW });
     expect(next.habits[0].intervalDays).toBeNull();
+  });
+});
+
+
+describe("collectTags / filterByTag —— 标签过滤（审计差距 3 / A6）", () => {
+  const tagged = [
+    { tags: ["工作", "学习"] },
+    { tags: ["工作"] },
+    { tags: [] },
+    {},
+  ];
+
+  it("collectTags 收集全库标签并排序去重", () => {
+    const tasks = tagged.map((patch, i) => createTask({ title: `t${i}`, ...patch }, NOW + i));
+    expect(collectTags(tasks)).toEqual(["工作", "学习"]);
+    expect(collectTags([])).toEqual([]);
+  });
+
+  it("filterByTag 只留命中任务；null/全部时原样返回", () => {
+    const tasks = tagged.map((patch, i) => createTask({ title: `t${i}`, ...patch }, NOW + i));
+    expect(filterByTag(tasks, "工作").map((t) => t.title)).toEqual(["t0", "t1"]);
+    expect(filterByTag(tasks, "学习").map((t) => t.title)).toEqual(["t0"]);
+    expect(filterByTag(tasks, null)).toBe(tasks);
+    expect(filterByTag(tasks, "不存在的")).toEqual([]);
   });
 });

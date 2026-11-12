@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { Task } from "../domain/types";
 import { urgencyScore } from "../domain/urgency";
+import { collectTags, filterByTag } from "../store/taskStore";
 import { useT } from "../i18n";
 import { TaskCard } from "./TaskCard";
 import { TaskCheck } from "./TaskCheck";
@@ -46,7 +47,11 @@ export function TaskList({
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [lingering, setLingering] = useState<Task[]>([]);
   const [demoDone, setDemoDone] = useState(false);
+  const [filterTag, setFilterTag] = useState<string | null>(null);
   const timers = useRef(new Map<string, number>());
+
+  const allTags = useMemo(() => collectTags(tasks), [tasks]);
+  const visible = useMemo(() => filterByTag(tasks, filterTag), [tasks, filterTag]);
 
   const handleToggle = useCallback(
     (task: Task, origin?: { x: number; y: number }) => {
@@ -64,12 +69,12 @@ export function TaskList({
   );
 
   const rendered = useMemo(() => {
-    const liveIds = new Set(tasks.map((task) => task.id));
+    const liveIds = new Set(visible.map((task) => task.id));
     const extra = lingering.filter((task) => !liveIds.has(task.id));
-    if (extra.length === 0) return tasks.map((task) => ({ task, leaving: false }));
-    const merged = [...tasks.map((task) => ({ task, leaving: false })), ...extra.map((task) => ({ task, leaving: true }))];
+    if (extra.length === 0) return visible.map((task) => ({ task, leaving: false }));
+    const merged = [...visible.map((task) => ({ task, leaving: false })), ...extra.map((task) => ({ task, leaving: true }))];
     return merged.sort((a, b) => a.task.manualRank - b.task.manualRank);
-  }, [tasks, lingering]);
+  }, [visible, lingering]);
 
   if (tasks.length === 0 && lingering.length === 0) {
     // 面板空态刻意压成单行弱提示：完整叙事（能量环、语录、指引）在右侧台面，同屏不重复。
@@ -108,6 +113,40 @@ export function TaskList({
 
   return (
     <div className="space-y-2">
+      {allTags.length > 0 ? (
+        <div
+          className="flex flex-wrap items-center gap-1.5 px-2"
+          role="group"
+          aria-label={t("list.tagFilter")}
+        >
+          <button
+            type="button"
+            className="ap-chip"
+            data-tone={filterTag === null ? "today" : undefined}
+            aria-pressed={filterTag === null}
+            onClick={() => setFilterTag(null)}
+          >
+            {t("list.tagAll")}
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              className="ap-chip"
+              data-tone={filterTag === tag ? "today" : undefined}
+              aria-pressed={filterTag === tag}
+              onClick={() => setFilterTag((current) => (current === tag ? null : tag))}
+            >
+              #{tag}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {rendered.length === 0 && tasks.length > 0 ? (
+        <p className="px-2 py-1 text-center ap-t-xs leading-5 text-[var(--text-faint)]">
+          {t("list.tagEmpty")}
+        </p>
+      ) : null}
       {rendered.map(({ task, leaving }, index) => (
         <div key={task.id} data-striking={leaving ? "true" : undefined} data-drop={dropIndex === index ? "true" : undefined}>
           <TaskCard
